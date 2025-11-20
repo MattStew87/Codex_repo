@@ -11,6 +11,7 @@ import os
 import io
 import urllib.request
 from pathlib import Path
+import logging
 
 
 # ---------------------- File Helpers  ----------------------
@@ -25,6 +26,9 @@ TMP_DIR.mkdir(parents=True, exist_ok=True)
 DEFAULT_TEMPLATE_PATH = TEMPLATE_DIR / "main_template.png"
 DEFAULT_TEMPLATE_NAME = "main"
 DEFAULT_OUTPUT_PATH = GRAPHS_DIR / "pine_poster_group.png"
+
+
+logger = logging.getLogger(__name__)
 
 def _resolve_template_path(template_name: str) -> Path:
     """
@@ -308,7 +312,7 @@ def _circle_crop(img):
     return img
 
 # ----------------------- main render -----------------------
-def render_pine_poster_bar(
+def _render_pine_poster_bar_impl(
     title,
     subtitle,
     note_value,
@@ -695,6 +699,60 @@ def render_pine_poster_bar(
     canvas.save(out_path)
     print("✅ Saved:", out_path)
     return out_path
+
+
+def render_pine_poster_bar(
+    title,
+    subtitle,
+    note_value,
+    labels,
+    values,
+    colors_hex=None,
+    template_name: str = DEFAULT_TEMPLATE_NAME,
+    date_str=None,
+    center_image=None,
+    value_axis_label="Volume (USD)",
+    label_images=None,
+    orientation="horizontal",
+):
+    """Logging/error-handling wrapper for the bar renderer."""
+
+    render_context = {
+        "event": "render_bar_start",
+        "label_count": len(labels) if labels is not None else 0,
+        "template_name": template_name,
+        "orientation": orientation,
+        "has_center_image": bool(center_image),
+        "label_images_count": len(label_images) if label_images is not None else 0,
+    }
+    logger.info("Rendering bar poster", extra=render_context)
+
+    try:
+        out_path = _render_pine_poster_bar_impl(
+            title=title,
+            subtitle=subtitle,
+            note_value=note_value,
+            labels=labels,
+            values=values,
+            colors_hex=colors_hex,
+            template_name=template_name,
+            date_str=date_str,
+            center_image=center_image,
+            value_axis_label=value_axis_label,
+            label_images=label_images,
+            orientation=orientation,
+        )
+        logger.info(
+            "Bar poster rendered",
+            extra={**render_context, "event": "render_bar_success", "output_path": str(out_path)},
+        )
+        return out_path
+    except Exception:
+        logger.exception(
+            "Bar poster render failed",
+            extra={**render_context, "event": "render_bar_error"},
+        )
+        raise
 
 
 # --------------- example usage ----------------

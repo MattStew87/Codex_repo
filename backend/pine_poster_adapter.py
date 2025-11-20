@@ -1,9 +1,47 @@
 # pine_poster_adapter.py
 
+import logging
 from pathlib import Path
 
 from poster_schemas import PosterConfig
-from pine_poster import render_pine_poster
+from pine_poster import CENTER_UPLOAD_DIR, render_pine_poster
+
+
+logger = logging.getLogger(__name__)
+
+
+def _cleanup_center_image(center_image: str | None) -> None:
+    if not center_image:
+        return
+
+    try:
+        path = Path(center_image).resolve()
+    except (TypeError, ValueError):
+        logger.debug(
+            "Skipping center image cleanup: invalid path",
+            extra={"event": "center_cleanup_skipped", "center_image": str(center_image)},
+        )
+        return
+
+    if CENTER_UPLOAD_DIR not in path.parents:
+        return
+
+    try:
+        if path.exists():
+            path.unlink()
+            logger.info(
+                "Deleted uploaded center image after render",
+                extra={"event": "center_cleanup_success", "path": str(path)},
+            )
+    except OSError as exc:
+        logger.warning(
+            "Failed to delete uploaded center image",
+            extra={
+                "event": "center_cleanup_failed",
+                "path": str(path),
+                "error": str(exc),
+            },
+        )
 
 
 def render_pine_poster_from_config(config: PosterConfig) -> Path:
@@ -32,6 +70,7 @@ def render_pine_poster_from_config(config: PosterConfig) -> Path:
             labels=config.labels,
             values=config.values,
         )
+        _cleanup_center_image(config.center_image)
         return Path(out)
 
     if config.poster_type == "bar":
@@ -43,6 +82,7 @@ def render_pine_poster_from_config(config: PosterConfig) -> Path:
             label_images=config.label_images,
             orientation=config.orientation,
         )
+        _cleanup_center_image(config.center_image)
         return Path(out)
 
     if config.poster_type == "dual":
@@ -78,6 +118,7 @@ def render_pine_poster_from_config(config: PosterConfig) -> Path:
             time_range=config.time_range,
             time_bucket=config.time_bucket,
         )
+        _cleanup_center_image(config.center_image)
         return Path(out)
 
     # This should be unreachable because PosterConfig is a union of the three.

@@ -11,9 +11,15 @@ BASE_DIR = Path(__file__).resolve().parent
 GRAPHS_DIR = BASE_DIR / "graphs"
 TEMPLATE_DIR = GRAPHS_DIR / "templates"
 TMP_DIR = GRAPHS_DIR / "tmp"
+UPLOADS_DIR = BASE_DIR / "uploads"
+CENTER_UPLOAD_DIR = UPLOADS_DIR / "center"
+LABEL_UPLOAD_DIR = UPLOADS_DIR / "labels"
 
 GRAPHS_DIR.mkdir(parents=True, exist_ok=True)
 TMP_DIR.mkdir(parents=True, exist_ok=True)
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+CENTER_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+LABEL_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 DEFAULT_TEMPLATE_PATH = TEMPLATE_DIR / "main_template.png"
 DEFAULT_TEMPLATE_NAME = "main"
