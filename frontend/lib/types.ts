@@ -5,6 +5,8 @@
 // ===================
 export type PosterType = "pie" | "bar" | "dual";
 
+export type TimeRange = "7d" | "30d" | "90d" | "180d" | "1y" | "all";
+
 export interface BasePosterConfig {
   poster_type: PosterType;
   title: string;
@@ -72,6 +74,9 @@ export interface DualConfig extends BasePosterConfig {
 
   highlight_regions?: HighlightRegion[] | null;
   highlight_points?: HighlightPoint[] | null;
+
+  // trailing time window for the datetime axis
+  timeRange: TimeRange;
 }
 
 export type PosterConfig = PieConfig | BarConfig | DualConfig;

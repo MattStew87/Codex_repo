@@ -52,6 +52,7 @@ def render_pine_poster(
     include_zero_right=True,
     highlight_regions=None,
     highlight_points=None,
+    time_range="all",
 ):
     """
     Unified Pine poster entrypoint.
@@ -141,6 +142,7 @@ def render_pine_poster(
             highlight_points=highlight_points,
             date_str=date_str,
             center_image=center_image,
+            time_range=time_range,
         )
 
     else:

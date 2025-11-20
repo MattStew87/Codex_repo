@@ -8,6 +8,7 @@ import type {
   HighlightPoint,
   UiRegion,
   UiPoint,
+  TimeRange,
 } from "@/lib/types";
 import { HighlightEditor } from "./HighlightEditor";
 
@@ -130,6 +131,7 @@ export function DualFields({ config, onChange }: Props) {
     onChange({ ...config, ...patch });
 
   const xValues = config.x_values ?? [];
+  const timeRange: TimeRange = (config.timeRange as TimeRange) ?? "all";
   const leftSeriesLabels = useMemo(
     () => Object.keys(config.y_series ?? {}),
     [config.y_series],
@@ -245,6 +247,25 @@ export function DualFields({ config, onChange }: Props) {
           <p className="field-help">
             One X value per index. Series align by position.
           </p>
+        </div>
+
+        {/* 1b. Time range */}
+        <div className="field-row">
+          <label htmlFor="dual-time-range">Time range</label>
+          <select
+            id="dual-time-range"
+            value={timeRange}
+            onChange={(e) =>
+              updateConfig({ timeRange: e.target.value as TimeRange })
+            }
+          >
+            <option value="all">All</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+            <option value="180d">Last 180 days</option>
+            <option value="1y">Last 1 year</option>
+          </select>
         </div>
 
         {/* 2. Left series */}

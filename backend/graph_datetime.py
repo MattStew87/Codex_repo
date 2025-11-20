@@ -28,6 +28,58 @@ DEFAULT_TEMPLATE_PATH = TEMPLATE_DIR / "main_template.png"
 DEFAULT_TEMPLATE_NAME = "main"
 DEFAULT_OUTPUT_PATH = GRAPHS_DIR / "pine_poster_datetime.png"
 
+
+def _time_range_to_timedelta(r: str):
+    if r == "7d":
+        return timedelta(days=7)
+    if r == "30d":
+        return timedelta(days=30)
+    if r == "90d":
+        return timedelta(days=90)
+    if r == "180d":
+        return timedelta(days=180)
+    if r == "1y":
+        return timedelta(days=365)
+    return None
+
+
+def apply_time_range(xs, left_series_dict, right_series, time_range: str):
+    """
+    xs: list[datetime]
+    left_series_dict: dict[str, list[float]] from y_series (all same length)
+    right_series: list[float] or None
+    time_range: one of the TimeRange values
+    """
+
+    if not xs:
+        return xs, left_series_dict, right_series
+
+    dt = _time_range_to_timedelta(time_range)
+    if dt is None:
+        return xs, left_series_dict, right_series
+
+    max_ts = max(xs)
+    start_ts = max_ts - dt
+
+    keep_indices = [i for i, x in enumerate(xs) if x >= start_ts]
+
+    if not keep_indices:
+        return xs, left_series_dict, right_series
+
+    def _filter_list(lst):
+        return [lst[i] for i in keep_indices]
+
+    xs_f = _filter_list(xs)
+
+    left_filtered = {key: _filter_list(vals) for key, vals in left_series_dict.items()}
+
+    if right_series is not None:
+        right_filtered = _filter_list(right_series)
+    else:
+        right_filtered = None
+
+    return xs_f, left_filtered, right_filtered
+
 def _resolve_template_path(template_name: str) -> Path:
     """
     Map a simple template name to a template PNG filename.
@@ -289,6 +341,7 @@ def render_pine_poster_dual(
     highlight_points=None,
     date_str=None,
     center_image=None,
+    time_range="all",
 ):
     
     out_path = DEFAULT_OUTPUT_PATH
@@ -400,10 +453,9 @@ def render_pine_poster_dual(
                   fill=(0,0,0,255), font=subtitle_font)
 
     # --- x parsing (shared) ---
-    N = L
     x_is_date = False
     if x_values is None:
-        X = list(range(1, N+1))
+        X = list(range(1, L + 1))
     else:
         parsed = []
         for xv in x_values:
@@ -417,6 +469,26 @@ def render_pine_poster_dual(
                 parsed = list(x_values); x_is_date = False
                 break
         X = parsed
+
+    if x_is_date:
+        left_series_dict = {
+            label: list(series) for label, series in zip(left_labels, Y_left)
+        }
+        right_list = Y_right[0].tolist() if Y_right is not None else None
+
+        X, left_series_dict, right_list = apply_time_range(
+            X, left_series_dict, right_list, time_range
+        )
+
+        left_labels = list(left_series_dict.keys())
+        Y_left = [np.array(vals, dtype=float) for vals in left_series_dict.values()]
+        if right_list is not None and Y_right is not None:
+            Y_right = [np.array(right_list, dtype=float)]
+        else:
+            Y_right = None
+
+    L = len(Y_left[0])
+    N = L
 
     if x_is_date:
         x_num = mdates.date2num(X)
