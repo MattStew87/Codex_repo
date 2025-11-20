@@ -5,19 +5,13 @@ from fastapi import FastAPI, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
 from typing import List
+from pydantic import BaseModel
 import uuid
 
 from poster_schemas import PosterConfig, PosterType
 from poster_defaults import get_poster_default
-from pine_poster_adapter import render_pine_poster_from_config
-from pine_poster import GRAPHS_DIR  
-
-UPLOAD_DIR = GRAPHS_DIR / "uploads"
-CENTER_DIR = UPLOAD_DIR / "center"
-LABELS_DIR = UPLOAD_DIR / "labels"
-
-for d in (UPLOAD_DIR, CENTER_DIR, LABELS_DIR):
-    d.mkdir(parents=True, exist_ok=True)
+from pine_poster_adapter import cleanup_uploads, render_pine_poster_from_config
+from pine_poster import CENTER_UPLOAD_DIR, LABEL_UPLOAD_DIR
 
 app = FastAPI(title="Pine Poster API")
 
@@ -32,6 +26,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+class CleanupPayload(BaseModel):
+    center_image: str | None = None
+    label_images: list[str | None] | None = None
 
 
 @app.get("/poster/default")
@@ -68,7 +67,7 @@ def render_poster(config: PosterConfig):
 async def upload_center_image(file: UploadFile = File(...)):
     suffix = Path(file.filename).suffix.lower()
     safe_name = f"center_{uuid.uuid4().hex}{suffix}"
-    dest = CENTER_DIR / safe_name
+    dest = CENTER_UPLOAD_DIR / safe_name
 
     content = await file.read()
     dest.write_bytes(content)
@@ -89,7 +88,7 @@ async def upload_label_images(files: List[UploadFile] = File(...)):
         if not f.filename:
             continue
         suffix = Path(f.filename).suffix or ".png"
-        dest = LABELS_DIR / f"{uuid.uuid4().hex}{suffix}"
+        dest = LABEL_UPLOAD_DIR / f"{uuid.uuid4().hex}{suffix}"
 
         contents = await f.read()
         dest.write_bytes(contents)
@@ -100,5 +99,15 @@ async def upload_label_images(files: List[UploadFile] = File(...)):
         raise HTTPException(status_code=400, detail="No files uploaded")
 
     return {"paths": saved_paths}
+
+
+@app.post("/poster/cleanup")
+def cleanup_poster_uploads(payload: CleanupPayload):
+    result = cleanup_uploads(
+        center_image=payload.center_image,
+        label_images=payload.label_images,
+    )
+
+    return {"ok": True, **result}
 
 

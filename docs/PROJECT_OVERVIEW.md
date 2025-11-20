@@ -41,11 +41,11 @@
 - **Chart renderers:**
   - `graph_piechart.py` renders pie posters with Matplotlib/Pillow, color palette helpers, label de-overlap, and optional center images.
   - `graph_group.py` and `graph_datetime.py` (plus supporting assets in `graphs/`) handle bar and dual/time-series charts.
-- **Assets:** `graphs/templates` contains base poster templates; `graphs/tmp` and `graphs/uploads` hold generated images and user uploads.
+- **Assets:** `graphs/templates` contains base poster templates; `graphs/tmp` holds generated renders and `uploads/` (sibling to `graphs/`) stores user-provided center/label images.
 
 ### Data movement
 - **Rendering pipeline:** API receives validated poster configs → adapter normalizes → `pine_poster` dispatches to specific renderer → PNG written to `backend/graphs` directories and returned as base64.
-- **Uploads:** `/poster/upload/center-image` and `/poster/upload/label-images` persist user-provided images into scoped upload folders and return filesystem paths for configs.
+- **Uploads:** `/poster/upload/center-image` and `/poster/upload/label-images` persist user-provided images into scoped upload folders (`backend/uploads/center` and `backend/uploads/labels`) and return filesystem paths for configs.
 - **Frontend catalog helper:** The Next.js catalog route streams S3 (`pinevisionarycloudstorage`) JSONL files, lists databases/tables, and samples column names by gunzipping lines to infer schema metadata.
 - **AI config generation:** The Next.js AI route relays poster state to OpenAI and sends back normalized config/binding JSON for the UI.
 
@@ -67,8 +67,8 @@
 - Add global state (Context/Redux/Zustand) for poster config and bindings to simplify passing state through deeply nested editors and the chat panel.
 
 ### Python/ETL/Postgres
-- Add structured logging and error handling around renderer functions (`graph_piechart.py`, `graph_group.py`, `graph_datetime.py`) to make render failures easier to diagnose.
-- Validate uploaded files’ MIME/types and size limits in `api.py` before writing to disk, and add cleanup routines for `graphs/tmp` and `graphs/uploads` to avoid bloat.
+- Maintain structured logging and error handling around renderer functions (`graph_piechart.py`, `graph_group.py`, `graph_datetime.py`) to make render failures easier to diagnose.
+- Validate uploaded files’ MIME/types and size limits in `api.py` before writing to disk, and add cleanup routines for `graphs/tmp` and `uploads/` to avoid bloat.
 - Factor shared palette/templating utilities into a module reused across renderers to reduce duplication and ensure consistent styling defaults.
 
 ### Overall architecture & DX

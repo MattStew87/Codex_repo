@@ -22,8 +22,35 @@ const s3 = new S3Client({ region: AWS_REGION });
 
 // ---------- helpers ----------
 
-// Use 0 for missing points
+// Use 0 for missing points unless forward-fill is requested
 const ZERO_FILL_DEFAULT = 0;
+
+type MissingMode = DualAxisBinding["missing_mode"];
+
+const normalizeMissingMode = (mode: MissingMode): MissingMode =>
+  mode === "forward_fill" ? "forward_fill" : "zero";
+
+const buildSeriesWithMissingMode = (
+  x_keys: string[],
+  getVal: (x: string) => number | undefined,
+  mode: MissingMode,
+): number[] => {
+  let last: number | null = null;
+
+  return x_keys.map((x) => {
+    const raw = getVal(x);
+
+    if (raw == null || Number.isNaN(raw)) {
+      if (mode === "forward_fill" && last !== null) {
+        return last;
+      }
+      return ZERO_FILL_DEFAULT;
+    }
+
+    last = raw;
+    return raw;
+  });
+};
 
 function sortKeys(xs: string[]): string[] {
   const copy = [...xs];
@@ -61,6 +88,7 @@ function isPieBinding(body: QueryBinding): body is PieDataBinding {
 // ---------- dual timeseries handler ----------
 async function handleDual(binding: DualAxisBinding) {
   const { db, table, x_column, series, grouped, group_column } = binding;
+  const fillMode = normalizeMissingMode(binding.missing_mode);
 
   if (!db || !table || !x_column || !series || series.length === 0) {
     return NextResponse.json(
@@ -134,11 +162,11 @@ async function handleDual(binding: DualAxisBinding) {
     const y_series: Record<string, number[]> = {};
 
     for (const s of series) {
-      y_series[s.key] = x_keys.map((x) => {
-        const bucket = byX.get(x);
-        const v = bucket?.[s.key];
-        return v == null ? ZERO_FILL_DEFAULT : v;
-      });
+      y_series[s.key] = buildSeriesWithMissingMode(
+        x_keys,
+        (x) => byX.get(x)?.[s.key],
+        fillMode,
+      );
     }
 
     const payload: TimeseriesQueryResponse = {
@@ -212,24 +240,22 @@ async function handleDual(binding: DualAxisBinding) {
     const s0 = series[0];
     for (const g of groups) {
       const seriesName = g;
-      y_series[seriesName] = x_keys.map((x) => {
-        const groupMap = byXGroup.get(x);
-        const bucket = groupMap?.get(g);
-        const v = bucket?.[s0.key];
-        return v == null ? ZERO_FILL_DEFAULT : v;
-      });
+      y_series[seriesName] = buildSeriesWithMissingMode(
+        x_keys,
+        (x) => byXGroup.get(x)?.get(g)?.[s0.key],
+        fillMode,
+      );
     }
   } else {
     // General case: multiple metrics → flatten (group, series) to unique names
     for (const g of groups) {
       for (const s of series) {
         const seriesName = `${g} – ${s.key}`;
-        y_series[seriesName] = x_keys.map((x) => {
-          const groupMap = byXGroup.get(x);
-          const bucket = groupMap?.get(g);
-          const v = bucket?.[s.key];
-          return v == null ? ZERO_FILL_DEFAULT : v;
-        });
+        y_series[seriesName] = buildSeriesWithMissingMode(
+          x_keys,
+          (x) => byXGroup.get(x)?.get(g)?.[s.key],
+          fillMode,
+        );
       }
     }
   }
