@@ -6,6 +6,7 @@ from pydantic import BaseModel, field_validator, model_validator, ConfigDict, Fi
 
 PosterType = Literal["pie", "bar", "dual"]
 TimeRange = Literal["7d", "30d", "90d", "180d", "1y", "all"]
+TimeBucket = Literal["none", "7d", "30d", "90d", "180d", "1y"]
 
 
 class BasePosterConfig(BaseModel):
@@ -130,6 +131,7 @@ class DualConfig(BasePosterConfig):
     highlight_points: Optional[List[HighlightPoint]] = None
 
     time_range: TimeRange = Field("all", alias="timeRange")
+    time_bucket: TimeBucket = Field("none", alias="timeBucket")
 
     @model_validator(mode="after")
     def validate_series_lengths(self) -> "DualConfig":

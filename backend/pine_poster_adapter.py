@@ -76,6 +76,7 @@ def render_pine_poster_from_config(config: PosterConfig) -> Path:
             highlight_regions=highlight_regions,
             highlight_points=highlight_points,
             time_range=config.time_range,
+            time_bucket=config.time_bucket,
         )
         return Path(out)
 

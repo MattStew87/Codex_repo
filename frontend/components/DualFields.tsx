@@ -9,6 +9,7 @@ import type {
   UiRegion,
   UiPoint,
   TimeRange,
+  TimeBucket,
 } from "@/lib/types";
 import { HighlightEditor } from "./HighlightEditor";
 
@@ -132,6 +133,7 @@ export function DualFields({ config, onChange }: Props) {
 
   const xValues = config.x_values ?? [];
   const timeRange: TimeRange = (config.timeRange as TimeRange) ?? "all";
+  const timeBucket: TimeBucket = (config.timeBucket as TimeBucket) ?? "none";
   const leftSeriesLabels = useMemo(
     () => Object.keys(config.y_series ?? {}),
     [config.y_series],
@@ -266,6 +268,28 @@ export function DualFields({ config, onChange }: Props) {
             <option value="180d">Last 180 days</option>
             <option value="1y">Last 1 year</option>
           </select>
+        </div>
+
+        {/* 1c. Time bucket */}
+        <div className="field-row">
+          <label htmlFor="dual-time-bucket">Time bucket</label>
+          <select
+            id="dual-time-bucket"
+            value={timeBucket}
+            onChange={(e) =>
+              updateConfig({ timeBucket: e.target.value as TimeBucket })
+            }
+          >
+            <option value="none">No aggregation</option>
+            <option value="7d">Week (start Monday)</option>
+            <option value="30d">Month (calendar start)</option>
+            <option value="90d">Quarter (calendar start)</option>
+            <option value="180d">Half year (Jan/Jul)</option>
+            <option value="1y">Year (Jan 1)</option>
+          </select>
+          <p className="field-help">
+            Buckets datetime x-values and sums all series before plotting.
+          </p>
         </div>
 
         {/* 2. Left series */}

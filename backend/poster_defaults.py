@@ -81,6 +81,7 @@ def default_dual() -> DualConfig:
         highlight_regions=None,
         highlight_points=None,
         time_range="all",
+        time_bucket="none",
     )
 
 
