@@ -387,24 +387,12 @@ export function DualDataBindingSection({
     (!requiresGroupColumn || !!activeAxis.group_column);
 
   return (
-    <div
-      style={{
-        border: "1px solid #e5e7eb",
-        borderRadius: "0.75rem",
-        padding: "0.75rem",
-        marginBottom: "0.75rem",
-        background: "#f9fafb",
-      }}
-    >
-      <h3
-        style={{
-          fontSize: "0.9rem",
-          fontWeight: 600,
-          marginBottom: "0.5rem",
-        }}
-      >
-        Data binding
-      </h3>
+    <div className="data-binding-card">
+      <h3 className="data-binding-title">Data binding</h3>
+      <p className="data-binding-subtitle">
+        Bind each axis to a data source. Right axis accepts a single series for
+        clarity.
+      </p>
 
       {/* Target axis selector */}
       <div className="field-row">
@@ -506,15 +494,9 @@ export function DualDataBindingSection({
         </div>
       )}
 
-      <div style={{ marginTop: "0.5rem" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "0.25rem",
-          }}
-        >
-          <span style={{ fontSize: "0.8rem", fontWeight: 500 }}>
+      <div className="stack">
+        <div className="inline-between">
+          <span className="text-small text-semibold">
             {side === "left"
               ? "Left-axis series bindings"
               : "Right-axis series binding"}
@@ -525,21 +507,11 @@ export function DualDataBindingSection({
         </div>
 
         {seriesCount === 0 && (
-          <p style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-            No series bound yet.
-          </p>
+          <p className="helper-text">No series bound yet.</p>
         )}
 
         {(activeAxis.series ?? []).map((s, idx) => (
-          <div
-            key={idx}
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              alignItems: "center",
-              marginBottom: "0.25rem",
-            }}
-          >
+          <div key={idx} className="inline-field-row">
             <input
               type="text"
               placeholder="Series label"
@@ -565,18 +537,10 @@ export function DualDataBindingSection({
       </div>
 
       {error && (
-        <p
-          style={{
-            fontSize: "0.75rem",
-            color: "#b91c1c",
-            marginTop: "0.25rem",
-          }}
-        >
-          {error}
-        </p>
+        <p className="helper-text text-danger">{error}</p>
       )}
 
-      <div style={{ marginTop: "0.5rem" }}>
+      <div className="data-binding-actions">
         <button type="button" onClick={handleApplyData} disabled={!canApply}>
           {loading ? "Loading…" : "Apply data to chart"}
         </button>

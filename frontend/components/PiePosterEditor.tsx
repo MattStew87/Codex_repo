@@ -24,7 +24,7 @@ export function PiePosterEditor({
   onBindingChange,
 }: Props) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div className="stack-lg">
       <PieDataBindingSection
         config={config}
         binding={binding}
