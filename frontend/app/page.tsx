@@ -23,6 +23,7 @@ import { BarPosterEditor } from "@/components/BarPosterEditor";
 import { DualPosterEditor } from "@/components/DualPosterEditor";
 import { PosterPreview } from "@/components/PosterPreview";
 import { ConfigChatPanel } from "@/components/ConfigChatPanel";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface CatalogDbResponse {
   dbs: string[];
@@ -215,11 +216,16 @@ export default function Page() {
   return (
     <div className="app-root">
       <header className="app-header">
-        <h1>Pine Poster Playground</h1>
-        <p>
-          Select a chart type, tweak its config, render via FastAPI, and
-          download the PNG.
-        </p>
+        <div className="app-header-row">
+          <div>
+            <h1>Pine Poster Playground</h1>
+            <p>
+              Select a chart type, tweak its config, render via FastAPI, and
+              download the PNG.
+            </p>
+          </div>
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="app-main">
