@@ -35,7 +35,7 @@ Purpose: Modify FastAPI endpoints and rendering pipeline safely.
 Workflow:
 1. Map changes to API surface in `backend/api.py`, ensuring Pydantic schema validation and CORS stay intact.
 2. When altering render logic, propagate updates through `backend/pine_poster_adapter.py` and renderer entrypoint `backend/pine_poster.py` before touching chart modules (`graph_piechart.py`, `graph_group.py`, `graph_datetime.py`).
-3. Preserve file system expectations for assets/uploads (`backend/graphs/templates`, `backend/graphs/tmp`, `backend/graphs/uploads`).
+3. Preserve file system expectations for assets/uploads (`backend/graphs/templates`, `backend/graphs/tmp`, `backend/uploads`).
 4. Keep defaults in sync with schema requirements (`backend/poster_defaults.py`), updating any demo data or palettes consistently.
 5. Add/adjust logging and error handling around render steps when changing behavior; prefer deterministic outputs for previews.
 

@@ -14,6 +14,7 @@ import os
 import io
 import urllib.request
 from pathlib import Path
+import logging
 
 
 # ---------------------- File Helpers  ----------------------
@@ -28,6 +29,9 @@ TMP_DIR.mkdir(parents=True, exist_ok=True)
 DEFAULT_TEMPLATE_PATH = TEMPLATE_DIR / "main_template.png"
 DEFAULT_TEMPLATE_NAME = "main"
 DEFAULT_OUTPUT_PATH = GRAPHS_DIR / "pine_poster_datetime.png"
+
+
+logger = logging.getLogger(__name__)
 
 
 def _time_range_to_timedelta(r: str):
@@ -399,7 +403,7 @@ def _load_image(path_or_url):
         return None
 
 # ----------------------- main render -----------------------
-def render_pine_poster_dual(
+def _render_pine_poster_dual_impl(
     title,
     subtitle,
     note_value,
@@ -1020,6 +1024,85 @@ def render_pine_poster_dual(
     canvas.save(out_path)
     print(f"✅ Saved:", out_path)
     return out_path
+
+
+def render_pine_poster_dual(
+    title,
+    subtitle,
+    note_value,
+    x_values,
+    y_series,
+    colors_hex=None,
+    ylabel_left="",
+    log_left=False,
+    include_zero_left=True,
+    chart_type="line",
+    right_series=None,
+    right_color_hex="#8C3A3A",
+    ylabel_right="",
+    right_chart_type="line",
+    log_right=False,
+    include_zero_right=True,
+    template_name: str = DEFAULT_TEMPLATE_NAME,
+    highlight_regions=None,
+    highlight_points=None,
+    date_str=None,
+    center_image=None,
+    time_range="all",
+    time_bucket="none",
+):
+    """Logging/error-handling wrapper for the dual-axis renderer."""
+
+    render_context = {
+        "event": "render_dual_start",
+        "x_len": len(x_values) if x_values is not None else 0,
+        "y_series_count": len(y_series) if y_series is not None else 0,
+        "template_name": template_name,
+        "has_center_image": bool(center_image),
+        "highlight_regions_count": len(highlight_regions) if highlight_regions else 0,
+        "highlight_points_count": len(highlight_points) if highlight_points else 0,
+        "time_range": time_range,
+        "time_bucket": time_bucket,
+    }
+    logger.info("Rendering dual-axis poster", extra=render_context)
+
+    try:
+        out_path = _render_pine_poster_dual_impl(
+            title=title,
+            subtitle=subtitle,
+            note_value=note_value,
+            x_values=x_values,
+            y_series=y_series,
+            colors_hex=colors_hex,
+            ylabel_left=ylabel_left,
+            log_left=log_left,
+            include_zero_left=include_zero_left,
+            chart_type=chart_type,
+            right_series=right_series,
+            right_color_hex=right_color_hex,
+            ylabel_right=ylabel_right,
+            right_chart_type=right_chart_type,
+            log_right=log_right,
+            include_zero_right=include_zero_right,
+            template_name=template_name,
+            highlight_regions=highlight_regions,
+            highlight_points=highlight_points,
+            date_str=date_str,
+            center_image=center_image,
+            time_range=time_range,
+            time_bucket=time_bucket,
+        )
+        logger.info(
+            "Dual-axis poster rendered",
+            extra={**render_context, "event": "render_dual_success", "output_path": str(out_path)},
+        )
+        return out_path
+    except Exception:
+        logger.exception(
+            "Dual-axis poster render failed",
+            extra={**render_context, "event": "render_dual_error"},
+        )
+        raise
 
 
 # --------------- example usage ----------------

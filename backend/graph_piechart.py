@@ -11,6 +11,7 @@ import math
 import io
 import urllib.request
 from pathlib import Path
+import logging
 
 
 # ---------------------- File Helpers  ----------------------
@@ -25,6 +26,9 @@ TMP_DIR.mkdir(parents=True, exist_ok=True)
 DEFAULT_TEMPLATE_PATH = TEMPLATE_DIR / "main_template.png"
 DEFAULT_TEMPLATE_NAME = "main"
 DEFAULT_OUTPUT_PATH = GRAPHS_DIR / "pine_poster_pie.png"
+
+
+logger = logging.getLogger(__name__)
 
 def _resolve_template_path(template_name: str) -> Path:
     """
@@ -141,7 +145,7 @@ def _load_center_image(center_image):
         return None
 
 # ----------------------- main render -----------------------
-def render_pine_poster_pie(
+def _render_pine_poster_pie_impl(
     title,
     subtitle,
     note_value,
@@ -467,6 +471,52 @@ def render_pine_poster_pie(
     canvas.save(out_path)
     print("✅ Saved:", out_path)
     return out_path
+
+
+def render_pine_poster_pie(
+    title,
+    subtitle,
+    note_value,
+    labels,
+    values,
+    colors_hex=None,
+    template_name: str = DEFAULT_TEMPLATE_NAME,
+    date_str=None,
+    center_image=None,
+):
+    """Logging and error-handling wrapper for the pie renderer."""
+
+    render_context = {
+        "event": "render_pie_start",
+        "label_count": len(labels) if labels is not None else 0,
+        "template_name": template_name,
+        "has_center_image": bool(center_image),
+    }
+    logger.info("Rendering pie poster", extra=render_context)
+
+    try:
+        out_path = _render_pine_poster_pie_impl(
+            title=title,
+            subtitle=subtitle,
+            note_value=note_value,
+            labels=labels,
+            values=values,
+            colors_hex=colors_hex,
+            template_name=template_name,
+            date_str=date_str,
+            center_image=center_image,
+        )
+        logger.info(
+            "Pie poster rendered",
+            extra={**render_context, "event": "render_pie_success", "output_path": str(out_path)},
+        )
+        return out_path
+    except Exception:
+        logger.exception(
+            "Pie poster render failed",
+            extra={**render_context, "event": "render_pie_error"},
+        )
+        raise
 
 
 # --------------- example usage ----------------
