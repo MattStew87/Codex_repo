@@ -140,6 +140,7 @@ def render_pine_poster(
             highlight_regions=highlight_regions,
             highlight_points=highlight_points,
             date_str=date_str,
+            center_image=center_image,
         )
 
     else:

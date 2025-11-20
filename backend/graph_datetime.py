@@ -10,6 +10,8 @@ from datetime import datetime, timedelta
 from dateutil import parser as dateparser
 from matplotlib.font_manager import FontProperties
 import os
+import io
+import urllib.request
 from pathlib import Path
 
 
@@ -247,6 +249,23 @@ def _set_log_ticks(ax, data_arrays, pad_frac=0.22):
     )
     ax.yaxis.get_offset_text().set_visible(False)
 
+
+# ------------------ image helpers --------------------------
+def _load_image(path_or_url):
+    if not path_or_url:
+        return None
+    try:
+        if isinstance(path_or_url, str) and path_or_url.startswith(("http://", "https://")):
+            with urllib.request.urlopen(path_or_url) as resp:
+                data = resp.read()
+            img = Image.open(io.BytesIO(data)).convert("RGBA")
+        else:
+            img = Image.open(path_or_url).convert("RGBA")
+        return img
+    except Exception as e:
+        print("⚠️ Could not load image:", path_or_url, "error:", e)
+        return None
+
 # ----------------------- main render -----------------------
 def render_pine_poster_dual(
     title,
@@ -266,9 +285,10 @@ def render_pine_poster_dual(
     log_right=False,
     include_zero_right=True,
     template_name: str = DEFAULT_TEMPLATE_NAME,
-    highlight_regions=None,  
-    highlight_points=None,    
-    date_str=None,          
+    highlight_regions=None,
+    highlight_points=None,
+    date_str=None,
+    center_image=None,
 ):
     
     out_path = DEFAULT_OUTPUT_PATH
@@ -767,6 +787,22 @@ def render_pine_poster_dual(
     chart_img = Image.open(tmp_chart_path).convert("RGBA")
     chart_img = chart_img.resize((chart_width, chart_height),
                                  Image.Resampling.LANCZOS)
+
+    # optional center watermark
+    if center_image is not None:
+        center_img = _load_image(center_image)
+        if center_img is not None:
+            diameter = int(min(chart_width, chart_height) * 0.4)
+            if diameter > 0:
+                center_img = center_img.resize((diameter, diameter), Image.Resampling.LANCZOS)
+                mask = Image.new("L", (diameter, diameter), 0)
+                mask_draw = ImageDraw.Draw(mask)
+                mask_draw.ellipse((0, 0, diameter, diameter), fill=155)
+                cx = chart_width // 2
+                cy = chart_height // 2
+                top_left = (cx - diameter // 2, cy - diameter // 2)
+                chart_img.paste(center_img, top_left, mask)
+
     canvas.alpha_composite(chart_img, (chart_left, chart_top))
 
     # --- footer (date + note) ---
