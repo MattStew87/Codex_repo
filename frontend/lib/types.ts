@@ -124,6 +124,7 @@ export interface DualAxisBinding {
   series: DualSeriesBinding[];
   grouped?: boolean;      // only used for left, ignored for right
   group_column?: string;  // only used for left
+  missing_mode?: "zero" | "forward_fill"; // handling for absent points
 }
 
 export interface DualDataBinding {

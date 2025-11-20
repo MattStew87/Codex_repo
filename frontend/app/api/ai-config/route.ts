@@ -177,6 +177,7 @@ type DualAxisBinding = {
   table: string;            // table, e.g. "fact_swaps"
   x_column: string;         // time or bucket → x_values[] (e.g. "date", "hour")
   series: DualSeriesBinding[];
+  missing_mode?: "zero" | "forward_fill"; // fill gaps in timeseries
 
   // grouping is only meaningful for the LEFT axis
   grouped?: boolean;        // if true, aggregate by group_column within each x bucket
@@ -431,6 +432,8 @@ You MUST return ONLY a single minified JSON object:
           series,
           grouped: axis.grouped ?? false,
           group_column: axis.group_column ?? "",
+          missing_mode:
+            axis.missing_mode === "forward_fill" ? "forward_fill" : "zero",
         };
       };
 

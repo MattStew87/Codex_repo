@@ -30,6 +30,7 @@ interface CatalogColumnsResponse {
 }
 
 type AxisSide = "left" | "right";
+type MissingMode = DualAxisBinding["missing_mode"];
 
 // Clamp colors_hex to the number of left-series
 const buildColorsForLeftSeries = (
@@ -58,14 +59,42 @@ const buildColorsForLeftSeries = (
   return out;
 };
 
+const normalizeMissingMode = (mode: MissingMode): MissingMode =>
+  mode === "forward_fill" ? "forward_fill" : "zero";
+
+const alignSeriesToUnion = (
+  unionX: string[],
+  idxMap: Record<string, number>,
+  series: number[],
+  mode: MissingMode,
+): number[] => {
+  let last: number | null = null;
+
+  return unionX.map((x) => {
+    const i = idxMap[x];
+    const raw = i === undefined ? null : series[i];
+
+    if (raw == null || Number.isNaN(raw)) {
+      if (mode === "forward_fill" && last !== null) {
+        return last;
+      }
+      return 0;
+    }
+
+    last = raw;
+    return raw;
+  });
+};
+
 const createDefaultAxis = (): DualAxisBinding => ({
-  kind: "dual", 
+  kind: "dual",
   db: "plasma",
   table: "",
   x_column: "",
   series: [],
   grouped: false,
   group_column: "",
+  missing_mode: "zero",
 });
 
 export function DualDataBindingSection({
@@ -223,6 +252,7 @@ export function DualDataBindingSection({
         series: axis.series ?? [],
         grouped: side === "left" ? axis.grouped ?? false : false,
         group_column: side === "left" ? axis.group_column ?? "" : "",
+        missing_mode: normalizeMissingMode(axis.missing_mode),
       };
 
       const res = await fetch("/api/query", {
@@ -238,6 +268,15 @@ export function DualDataBindingSection({
 
       const newX = data.x_values ?? [];
       const newYSeries = data.y_series ?? {};
+
+      const leftMissingMode = normalizeMissingMode(
+        bindingState.left?.missing_mode,
+      );
+      const rightMissingMode = normalizeMissingMode(
+        bindingState.right?.missing_mode,
+      );
+      const activeMissingMode =
+        side === "left" ? leftMissingMode : rightMissingMode;
 
       const prevX = config.x_values ?? [];
       const prevY = config.y_series ?? {};
@@ -270,19 +309,22 @@ export function DualDataBindingSection({
 
         // Realign new left-series to unionX
         Object.entries(newYSeries).forEach(([name, arr]) => {
-          const aligned = unionX.map((x) => {
-            const i = newIdx[x];
-            return i === undefined ? 0 : arr[i] ?? 0;
-          });
-          nextY[name] = aligned;
+          nextY[name] = alignSeriesToUnion(
+            unionX,
+            newIdx,
+            arr,
+            activeMissingMode,
+          );
         });
 
         // Realign previous right_series (if present) to unionX
         if (prevRight.length > 0 && prevX.length > 0) {
-          nextRight = unionX.map((x) => {
-            const i = prevIdx[x];
-            return i === undefined ? 0 : prevRight[i] ?? 0;
-          });
+          nextRight = alignSeriesToUnion(
+            unionX,
+            prevIdx,
+            prevRight,
+            rightMissingMode,
+          );
         } else if (config.right_series) {
           // Keep explicit "no right" if previously set
           nextRight = config.right_series;
@@ -300,18 +342,21 @@ export function DualDataBindingSection({
 
         // Realign existing left-series to unionX
         Object.entries(prevY).forEach(([name, arr]) => {
-          const aligned = unionX.map((x) => {
-            const i = prevIdx[x];
-            return i === undefined ? 0 : arr[i] ?? 0;
-          });
-          nextY[name] = aligned;
+          nextY[name] = alignSeriesToUnion(
+            unionX,
+            prevIdx,
+            arr,
+            leftMissingMode,
+          );
         });
 
         // Realign new right-series to unionX
-        nextRight = unionX.map((x) => {
-          const i = newIdx[x];
-          return i === undefined ? 0 : rightRaw[i] ?? 0;
-        });
+        nextRight = alignSeriesToUnion(
+          unionX,
+          newIdx,
+          rightRaw,
+          activeMissingMode,
+        );
       }
 
       // Rebuild colors for left axis
@@ -451,6 +496,25 @@ export function DualDataBindingSection({
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="field-row">
+        <label>Missing data handling</label>
+        <select
+          value={normalizeMissingMode(activeAxis.missing_mode)}
+          onChange={(e) =>
+            updateActiveAxis({
+              missing_mode: e.target.value as MissingMode,
+            })
+          }
+        >
+          <option value="zero">Fill gaps with 0</option>
+          <option value="forward_fill">Carry last value forward</option>
+        </select>
+        <p className="field-help">
+          Choose how to fill missing points for this axis when a timestamp is
+          absent.
+        </p>
       </div>
 
       {/* Grouped toggle + group column (left axis only) */}

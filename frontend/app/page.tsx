@@ -85,6 +85,31 @@ export default function Page() {
   const [rendering, setRendering] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const cleanupUploadsForConfig = async (cfg: PosterConfig | null) => {
+    if (!cfg) return;
+
+    const centerImage = cfg.center_image ?? null;
+    const labelImages = isBar(cfg) ? cfg.label_images ?? null : null;
+    const hasLabels = Array.isArray(labelImages)
+      ? labelImages.some((p) => !!p)
+      : false;
+
+    if (!centerImage && !hasLabels) return;
+
+    try {
+      await fetch("/api/poster/cleanup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          center_image: centerImage,
+          label_images: labelImages,
+        }),
+      });
+    } catch (e) {
+      console.error("cleanup uploads failed", e);
+    }
+  };
+
   // Load defaults whenever posterType changes
   useEffect(() => {
     const loadDefaults = async (type: PosterType) => {
@@ -166,6 +191,9 @@ export default function Page() {
   }, []);
 
   const handlePosterTypeChange = (type: PosterType) => {
+    if (type !== posterType) {
+      void cleanupUploadsForConfig(config);
+    }
     setPosterType(type);
     // config is reloaded by the effect above
   };
@@ -210,6 +238,7 @@ export default function Page() {
         setError(null);
         setLoadingDefaults(true);
         setImageBase64(null);
+        await cleanupUploadsForConfig(config);
         const res = await fetch(
           `${API_BASE}/poster/default?poster_type=${posterType}`,
         );
@@ -340,6 +369,9 @@ export default function Page() {
                 config: nextCfg,
                 binding: nextBinding,
               }) => {
+                if (nextType !== posterType) {
+                  void cleanupUploadsForConfig(config);
+                }
                 setPosterType(nextType);
                 setConfig(ensureDualTimeFields(nextCfg));
                 setBinding(nextBinding);

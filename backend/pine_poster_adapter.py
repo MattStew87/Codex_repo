@@ -2,46 +2,83 @@
 
 import logging
 from pathlib import Path
+from typing import Iterable
 
 from poster_schemas import PosterConfig
-from pine_poster import CENTER_UPLOAD_DIR, render_pine_poster
+from pine_poster import CENTER_UPLOAD_DIR, LABEL_UPLOAD_DIR, render_pine_poster
 
 
 logger = logging.getLogger(__name__)
 
 
-def _cleanup_center_image(center_image: str | None) -> None:
-    if not center_image:
-        return
+def _safe_unlink(path_str: str | None, allowed_root: Path, event_prefix: str) -> bool:
+    if not path_str:
+        return False
 
     try:
-        path = Path(center_image).resolve()
+        path = Path(path_str).resolve()
     except (TypeError, ValueError):
         logger.debug(
-            "Skipping center image cleanup: invalid path",
-            extra={"event": "center_cleanup_skipped", "center_image": str(center_image)},
+            "Skipping cleanup: invalid path",
+            extra={
+                "event": f"{event_prefix}_cleanup_skipped",
+                "path": str(path_str),
+            },
         )
-        return
+        return False
 
-    if CENTER_UPLOAD_DIR not in path.parents:
-        return
+    if allowed_root not in path.parents:
+        logger.debug(
+            "Skipping cleanup: outside allowed uploads dir",
+            extra={
+                "event": f"{event_prefix}_cleanup_outside_root",
+                "path": str(path),
+                "root": str(allowed_root),
+            },
+        )
+        return False
 
     try:
         if path.exists():
             path.unlink()
             logger.info(
-                "Deleted uploaded center image after render",
-                extra={"event": "center_cleanup_success", "path": str(path)},
+                "Deleted uploaded asset",
+                extra={"event": f"{event_prefix}_cleanup_success", "path": str(path)},
             )
+            return True
     except OSError as exc:
         logger.warning(
-            "Failed to delete uploaded center image",
+            "Failed to delete uploaded asset",
             extra={
-                "event": "center_cleanup_failed",
+                "event": f"{event_prefix}_cleanup_failed",
                 "path": str(path),
                 "error": str(exc),
             },
         )
+
+    return False
+
+
+def cleanup_uploads(
+    *, center_image: str | None, label_images: Iterable[str | None] | None
+) -> dict[str, int | bool]:
+    """
+    Delete uploaded assets that live under the known uploads directories.
+
+    Returns a summary of what was removed.
+    """
+
+    deleted_center = _safe_unlink(center_image, CENTER_UPLOAD_DIR, "center")
+
+    deleted_labels = 0
+    for li in label_images or []:
+        if _safe_unlink(li, LABEL_UPLOAD_DIR, "label"):
+            deleted_labels += 1
+
+    return {
+        "center_deleted": deleted_center,
+        "label_images_deleted": deleted_labels,
+    }
 
 
 def render_pine_poster_from_config(config: PosterConfig) -> Path:

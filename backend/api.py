@@ -5,11 +5,12 @@ from fastapi import FastAPI, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
 from typing import List
+from pydantic import BaseModel
 import uuid
 
 from poster_schemas import PosterConfig, PosterType
 from poster_defaults import get_poster_default
-from pine_poster_adapter import render_pine_poster_from_config
+from pine_poster_adapter import cleanup_uploads, render_pine_poster_from_config
 from pine_poster import CENTER_UPLOAD_DIR, LABEL_UPLOAD_DIR
 
 app = FastAPI(title="Pine Poster API")
@@ -25,6 +26,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+class CleanupPayload(BaseModel):
+    center_image: str | None = None
+    label_images: list[str | None] | None = None
 
 
 @app.get("/poster/default")
@@ -93,5 +99,15 @@ async def upload_label_images(files: List[UploadFile] = File(...)):
         raise HTTPException(status_code=400, detail="No files uploaded")
 
     return {"paths": saved_paths}
+
+
+@app.post("/poster/cleanup")
+def cleanup_poster_uploads(payload: CleanupPayload):
+    result = cleanup_uploads(
+        center_image=payload.center_image,
+        label_images=payload.label_images,
+    )
+
+    return {"ok": True, **result}
 
 
