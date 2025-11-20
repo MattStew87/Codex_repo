@@ -454,11 +454,27 @@ def render_pine_poster_dual(
 
     # --- x parsing (shared) ---
     x_is_date = False
+
+    def _parse_x_values(vals):
+        parsed_dt = []
+        for xv in vals:
+            if isinstance(xv, datetime):
+                dt = xv
+            else:
+                dt = dateparser.parse(str(xv))
+            if not isinstance(dt, datetime):
+                raise ValueError("x_values entries must be datetime-like or numeric")
+            parsed_dt.append(_normalize_datetime_to_naive_utc(dt))
+        return parsed_dt
+
     if x_values is None:
         X = list(range(1, L + 1))
     else:
-        parsed = []
-        for xv in x_values:
+        try:
+            parsed = _parse_x_values(x_values)
+            X = parsed
+            x_is_date = True
+        except Exception:
             try:
                 if isinstance(xv, datetime):
                     dt = xv
