@@ -120,7 +120,6 @@ def render_pine_poster_from_config(config: PosterConfig) -> Path:
             labels=config.labels,
             values=config.values,
         )
-        _cleanup_center_image(config.center_image)
         return Path(out)
 
     if config.poster_type == "bar":
@@ -132,7 +131,6 @@ def render_pine_poster_from_config(config: PosterConfig) -> Path:
             label_images=config.label_images,
             orientation=config.orientation,
         )
-        _cleanup_center_image(config.center_image)
         return Path(out)
 
     if config.poster_type == "dual":
@@ -168,7 +166,6 @@ def render_pine_poster_from_config(config: PosterConfig) -> Path:
             time_range=config.time_range,
             time_bucket=config.time_bucket,
         )
-        _cleanup_center_image(config.center_image)
         return Path(out)
 
     # This should be unreachable because PosterConfig is a union of the three.
