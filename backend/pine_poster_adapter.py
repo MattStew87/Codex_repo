@@ -59,6 +59,23 @@ def _safe_unlink(path_str: str | None, allowed_root: Path, event_prefix: str) ->
     return False
 
 
+def _cleanup_center_image(center_image: str | None) -> bool:
+    """Attempt to delete a previously uploaded center image."""
+
+    return _safe_unlink(center_image, CENTER_UPLOAD_DIR, "center")
+
+
+def _cleanup_label_images(label_images: Iterable[str | None] | None) -> int:
+    """Attempt to delete any previously uploaded label images."""
+
+    deleted = 0
+    for li in label_images or []:
+        if _safe_unlink(li, LABEL_UPLOAD_DIR, "label"):
+            deleted += 1
+
+    return deleted
+
+
 def cleanup_uploads(
     *, center_image: str | None, label_images: Iterable[str | None] | None
 ) -> dict[str, int | bool]:
@@ -68,12 +85,8 @@ def cleanup_uploads(
     Returns a summary of what was removed.
     """
 
-    deleted_center = _safe_unlink(center_image, CENTER_UPLOAD_DIR, "center")
-
-    deleted_labels = 0
-    for li in label_images or []:
-        if _safe_unlink(li, LABEL_UPLOAD_DIR, "label"):
-            deleted_labels += 1
+    deleted_center = _cleanup_center_image(center_image)
+    deleted_labels = _cleanup_label_images(label_images)
 
     return {
         "center_deleted": deleted_center,
