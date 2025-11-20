@@ -6,7 +6,7 @@ import matplotlib as mpl
 import matplotlib.dates as mdates
 import matplotlib.ticker as mticker
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dateutil import parser as dateparser
 from matplotlib.font_manager import FontProperties
 import os
@@ -461,10 +461,11 @@ def render_pine_poster_dual(
         for xv in x_values:
             try:
                 if isinstance(xv, datetime):
-                    parsed.append(xv); x_is_date = True
+                    dt = xv
                 else:
                     dt = dateparser.parse(str(xv))
-                    parsed.append(dt); x_is_date = True
+                dt = _normalize_datetime_to_naive_utc(dt)
+                parsed.append(dt); x_is_date = True
             except Exception:
                 parsed = list(x_values); x_is_date = False
                 break
