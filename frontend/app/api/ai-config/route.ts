@@ -109,6 +109,7 @@ type DualConfig = {
   log_left: boolean;
   include_zero_left: boolean;
   timeRange: "7d" | "30d" | "90d" | "180d" | "1y" | "all";
+  timeBucket: "none" | "7d" | "30d" | "90d" | "180d" | "1y";
 
   // Right axis (single numeric series)
   right_series: number[] | null;
@@ -381,6 +382,8 @@ You MUST return ONLY a single minified JSON object:
       dual.ylabel_right = dual.ylabel_right ?? "";
       dual.right_color_hex = dual.right_color_hex ?? "#2563EB";
       dual.right_series_type = dual.right_series_type ?? "line";
+      dual.timeRange = dual.timeRange ?? "all";
+      dual.timeBucket = dual.timeBucket ?? "none";
     }
 
     // ---------------------------------------------------------------------

@@ -28,6 +28,7 @@
 - **Config discrimination:** Poster editors and page-level helpers branch on `poster_type` to render the correct editor and enforce type-safe updates (`isPie/isBar/isDual`).
 - **Bindings as first-class state:** `BindingState` keeps database bindings in sync with configs, with dedicated UI sections for pie/bar/dual bindings.
 - **Invariant enforcement:** The AI route patches responses to preserve read-only image fields and fill dual-axis defaults, ensuring downstream UI/renderer compatibility.
+- **Time filters and bucketing:** Dual charts support trailing time windows (`timeRange`) and optional calendar-based aggregation (`timeBucket`) so weekly/monthly/quarterly buckets are summed before plotting on both axes.
 - **Theming & UX:** A simple `ThemeToggle` and `globals.css` provide base styling; preview and chat panels are split into control and preview sections for clarity.
 
 ## Backend / Data / Infra (Python / FastAPI)

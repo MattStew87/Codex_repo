@@ -1,5 +1,6 @@
 # pine_overlay_chart_dual_axis_optional_right_highlight_points.py
 
+from collections import OrderedDict
 from PIL import Image, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -85,6 +86,79 @@ def apply_time_range(xs, left_series_dict, right_series, time_range: str):
         right_filtered = None
 
     return xs_f, left_filtered, right_filtered
+
+
+def _bucket_start(dt: datetime, time_bucket: str) -> datetime | None:
+    bucket = (time_bucket or "none").lower()
+
+    if bucket in ("none", "off", "all"):
+        return None
+
+    if bucket == "7d":
+        base = dt - timedelta(days=dt.weekday())
+        return datetime(base.year, base.month, base.day)
+
+    if bucket == "30d":
+        return datetime(dt.year, dt.month, 1)
+
+    if bucket == "90d":
+        quarter_start_month = 3 * ((dt.month - 1) // 3) + 1
+        return datetime(dt.year, quarter_start_month, 1)
+
+    if bucket == "180d":
+        half_year_month = 1 if dt.month <= 6 else 7
+        return datetime(dt.year, half_year_month, 1)
+
+    if bucket == "1y":
+        return datetime(dt.year, 1, 1)
+
+    return None
+
+
+def apply_time_bucket(xs, left_series_dict, right_series, time_bucket: str):
+    """Aggregate datetime-series points into requested time buckets."""
+
+    if not xs:
+        return xs, left_series_dict, right_series
+
+    bucket_labels = [_bucket_start(x, time_bucket) for x in xs]
+    if all(b is None for b in bucket_labels):
+        return xs, left_series_dict, right_series
+
+    labels = list(left_series_dict.keys())
+    order = sorted(range(len(xs)), key=lambda i: xs[i])
+    buckets = OrderedDict()
+
+    for idx in order:
+        b_start = bucket_labels[idx]
+        if b_start is None:
+            return xs, left_series_dict, right_series
+
+        bucket = buckets.get(b_start)
+        if bucket is None:
+            bucket = {
+                "left": {label: 0.0 for label in labels},
+                "right": 0.0 if right_series is not None else None,
+            }
+            buckets[b_start] = bucket
+
+        for label in labels:
+            bucket["left"][label] += float(left_series_dict[label][idx])
+
+        if right_series is not None and bucket["right"] is not None:
+            bucket["right"] += float(right_series[idx])
+
+    xs_bucketed = list(buckets.keys())
+    left_bucketed = {
+        label: [bucket["left"][label] for bucket in buckets.values()]
+        for label in labels
+    }
+
+    right_bucketed = None
+    if right_series is not None:
+        right_bucketed = [bucket["right"] for bucket in buckets.values()]
+
+    return xs_bucketed, left_bucketed, right_bucketed
 
 def _resolve_template_path(template_name: str) -> Path:
     """
@@ -348,6 +422,7 @@ def render_pine_poster_dual(
     date_str=None,
     center_image=None,
     time_range="all",
+    time_bucket="none",
 ):
     
     out_path = DEFAULT_OUTPUT_PATH
@@ -516,25 +591,7 @@ def render_pine_poster_dual(
                     "x_values must be parseable datetimes or numeric values"
                 ) from exc
 
-    if x_is_date:
-        left_series_dict = {
-            label: list(series) for label, series in zip(left_labels, Y_left)
-        }
-        right_list = Y_right[0].tolist() if Y_right is not None else None
-
-        X, left_series_dict, right_list = apply_time_range(
-            X, left_series_dict, right_list, time_range
-        )
-
-        left_labels = list(left_series_dict.keys())
-        Y_left = [np.array(vals, dtype=float) for vals in left_series_dict.values()]
-        if right_list is not None and Y_right is not None:
-            Y_right = [np.array(right_list, dtype=float)]
-        else:
-            Y_right = None
-
-    L = len(Y_left[0])
-    N = L
+    N = len(Y_left[0])
 
     if x_is_date:
         left_series_dict = {
@@ -545,6 +602,9 @@ def render_pine_poster_dual(
         X, left_series_dict, right_list = apply_time_range(
             X, left_series_dict, right_list, time_range
         )
+        X, left_series_dict, right_list = apply_time_bucket(
+            X, left_series_dict, right_list, time_bucket
+        )
 
         left_labels = list(left_series_dict.keys())
         Y_left = [np.array(vals, dtype=float) for vals in left_series_dict.values()]
@@ -553,8 +613,8 @@ def render_pine_poster_dual(
         else:
             Y_right = None
 
-    L = len(Y_left[0])
-    N = L
+        L = len(Y_left[0])
+        N = L
 
     if x_is_date:
         x_num = mdates.date2num(X)

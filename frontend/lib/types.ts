@@ -6,6 +6,7 @@
 export type PosterType = "pie" | "bar" | "dual";
 
 export type TimeRange = "7d" | "30d" | "90d" | "180d" | "1y" | "all";
+export type TimeBucket = "none" | "7d" | "30d" | "90d" | "180d" | "1y";
 
 export interface BasePosterConfig {
   poster_type: PosterType;
@@ -77,6 +78,8 @@ export interface DualConfig extends BasePosterConfig {
 
   // trailing time window for the datetime axis
   timeRange: TimeRange;
+  // optional aggregation window (calendar bucket) applied before plotting
+  timeBucket: TimeBucket;
 }
 
 export type PosterConfig = PieConfig | BarConfig | DualConfig;
