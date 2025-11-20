@@ -108,6 +108,7 @@ type DualConfig = {
   left_series_type: "line" | "area" | "bar";
   log_left: boolean;
   include_zero_left: boolean;
+  timeRange: "7d" | "30d" | "90d" | "180d" | "1y" | "all";
 
   // Right axis (single numeric series)
   right_series: number[] | null;

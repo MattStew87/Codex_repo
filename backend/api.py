@@ -39,7 +39,7 @@ def get_default(
     poster_type: PosterType = Query(..., description="One of: pie, bar, dual")
 ):
     cfg = get_poster_default(poster_type)
-    return cfg.model_dump()
+    return cfg.model_dump(by_alias=True)
 
 
 @app.post("/poster/render")
@@ -57,10 +57,10 @@ def render_poster(config: PosterConfig):
 
     b64 = base64.b64encode(img_bytes).decode("ascii")
 
-    return { 
+    return {
         "ok": True,
         "image_base64": b64,
-        "config_used": config.model_dump(),
+        "config_used": config.model_dump(by_alias=True),
     }
 
 
