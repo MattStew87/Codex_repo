@@ -217,17 +217,11 @@ export function BarDataBindingSection({
     bindingState.value_column;
 
   return (
-    <div
-      style={{
-        border: "1px solid #e5e7eb",
-        borderRadius: "0.75rem",
-        padding: "0.75rem",
-        marginBottom: "0.75rem",
-        background: "#f9fafb",
-      }}
-    >
-      <h2 className="config-card-title">Data Binding</h2>
-      <br /> 
+    <div className="data-binding-card">
+      <h2 className="data-binding-title">Data binding</h2>
+      <p className="data-binding-subtitle">
+        Choose where to read labels/values for the bar chart.
+      </p>
 
       <div className="field-row">
         <label>Schema</label>
@@ -303,18 +297,10 @@ export function BarDataBindingSection({
       </div>
 
       {error && (
-        <p
-          style={{
-            fontSize: "0.75rem",
-            color: "#b91c1c",
-            marginTop: "0.25rem",
-          }}
-        >
-          {error}
-        </p>
+        <p className="helper-text text-danger">{error}</p>
       )}
 
-      <div style={{ marginTop: "0.5rem" }}>
+      <div className="data-binding-actions">
         <button type="button" onClick={handleApply} disabled={!canApply}>
           {loading ? "Loading…" : "Apply bar data"}
         </button>

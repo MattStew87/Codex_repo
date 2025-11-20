@@ -26,7 +26,7 @@ export function DualPosterEditor({
   onBindingChange,
 }: Props) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div className="stack-lg">
       <DualDataBindingSection
         config={config}
         binding={binding}

@@ -1,7 +1,5 @@
-// app/components/HighlightEditor.tsx
 "use client";
 
-import type { CSSProperties } from "react";
 import type { UiRegion, UiPoint } from "@/lib/types";
 
 interface HighlightEditorProps {
@@ -83,101 +81,40 @@ export function HighlightEditor({
     updatePoints(next);
   };
 
-  const sharedSelectStyle: CSSProperties = {
-    fontSize: "0.75rem",
-    backgroundColor: "#ffffff",
-    borderRadius: "0.375rem",
-    border: "1px solid #d1d5db",
-    padding: "0.15rem 0.35rem",
-  };
-
-  const pillStyle: CSSProperties = {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "0.4rem",
-    alignItems: "center",
-    marginBottom: "0.25rem",
-    padding: "0.35rem 0.5rem",
-    borderRadius: "0.75rem",
-    background: "#e5e7eb",
-    border: "1px solid #d1d5db",
-  };
-
-  const smallButtonStyle: CSSProperties = {
-    fontSize: "0.75rem",
-    padding: "0.15rem 0.55rem",
-    borderRadius: "999px",
-    border: "1px solid #111827",
-    background: "#111827",
-    color: "#f9fafb",
-    cursor: "pointer",
-  };
-
-  const smallButtonDisabledStyle: CSSProperties = {
-    ...smallButtonStyle,
-    background: "#9ca3af",
-    borderColor: "#9ca3af",
-    cursor: "not-allowed",
-  };
-
   return (
-    <div
-      style={{
-        borderTop: "1px solid #d1d5db",
-        marginTop: "1rem",
-        paddingTop: "0.75rem",
-      }}
-    >
-      <h3
-        style={{
-          fontSize: "0.9rem",
-          fontWeight: 700,
-          marginBottom: "0.5rem",
-          color: "#111827",
-        }}
-      >
-        Highlights
-      </h3>
+    <div className="highlight-section">
+      <div className="highlight-header">
+        <h3 className="highlight-title">Highlights</h3>
+        <span className="badge-soft">New</span>
+      </div>
 
       {!canEdit && (
-        <p style={{ fontSize: "0.8rem", color: "#6b7280" }}>
+        <p className="helper-text">
           Add x-values first to enable highlight editing.
         </p>
       )}
 
       {/* Regions */}
-      <div style={{ marginBottom: "0.75rem" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "0.25rem",
-          }}
-        >
-          <span
-            style={{ fontSize: "0.8rem", fontWeight: 600, color: "#374151" }}
-          >
-            Highlight Bands
-          </span>
+      <div className="stack">
+        <div className="inline-between">
+          <span className="text-small text-semibold">Highlight bands</span>
           <button
             type="button"
             disabled={!canEdit}
             onClick={addRegion}
-            style={canEdit ? smallButtonStyle : smallButtonDisabledStyle}
+            className="chip-button"
           >
             + Add band
           </button>
         </div>
 
         {uiRegions.length === 0 && (
-          <p style={{ fontSize: "0.75rem", color: "#9ca3af" }}>
-            No highlight bands yet.
-          </p>
+          <p className="highlight-empty">No highlight bands yet.</p>
         )}
 
         {uiRegions.map((r, idx) => (
-          <div key={r.id} style={pillStyle}>
-            <span style={{ fontSize: "0.75rem", color: "#4b5563" }}>From</span>
+          <div key={r.id} className="highlight-chip">
+            <span className="text-tiny text-muted">From</span>
             <select
               value={r.startIndex ?? ""}
               onChange={(e) =>
@@ -189,7 +126,7 @@ export function HighlightEditor({
                 })
               }
               disabled={!canEdit}
-              style={sharedSelectStyle}
+              className="pill-select"
             >
               <option value="">(none)</option>
               {xOptions.map((o) => (
@@ -199,7 +136,7 @@ export function HighlightEditor({
               ))}
             </select>
 
-            <span style={{ fontSize: "0.75rem", color: "#4b5563" }}>to</span>
+            <span className="text-tiny text-muted">to</span>
             <select
               value={r.endIndex ?? ""}
               onChange={(e) =>
@@ -211,7 +148,7 @@ export function HighlightEditor({
                 })
               }
               disabled={!canEdit}
-              style={sharedSelectStyle}
+              className="pill-select"
             >
               <option value="">(none)</option>
               {xOptions.map((o) => (
@@ -230,29 +167,13 @@ export function HighlightEditor({
                 // prevent parent key handlers from stealing Backspace/Space
                 e.stopPropagation();
               }}
-              style={{
-                flex: 1,
-                minWidth: "8rem",
-                fontSize: "0.75rem",
-                padding: "0.2rem 0.45rem",
-                backgroundColor: "#ffffff",
-                borderRadius: "0.375rem",
-                border: "1px solid #d1d5db",
-              }}
+              className="pill-input"
             />
 
             <button
               type="button"
               onClick={() => removeRegionAt(idx)}
-              style={{
-                fontSize: "0.75rem",
-                borderRadius: "999px",
-                padding: "0.1rem 0.45rem",
-                background: "#fee2e2",
-                color: "#991b1b",
-                border: "1px solid #fecaca",
-                cursor: "pointer",
-              }}
+              className="chip-button chip-button--danger"
             >
               ×
             </button>
@@ -262,37 +183,25 @@ export function HighlightEditor({
 
       {/* Points */}
       <div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "0.25rem",
-          }}
-        >
-          <span
-            style={{ fontSize: "0.8rem", fontWeight: 600, color: "#374151" }}
-          >
-            Highlight points
-          </span>
+        <div className="inline-between">
+          <span className="text-small text-semibold">Highlight points</span>
           <button
             type="button"
             disabled={!canEdit}
             onClick={addPoint}
-            style={canEdit ? smallButtonStyle : smallButtonDisabledStyle}
+            className="chip-button"
           >
             + Add point
           </button>
         </div>
 
         {uiPoints.length === 0 && (
-          <p style={{ fontSize: "0.75rem", color: "#9ca3af" }}>
-            No highlight points yet.
-          </p>
+          <p className="highlight-empty">No highlight points yet.</p>
         )}
 
         {uiPoints.map((p, idx) => (
-          <div key={p.id} style={pillStyle}>
-            <span style={{ fontSize: "0.75rem", color: "#4b5563" }}>X</span>
+          <div key={p.id} className="highlight-chip">
+            <span className="text-tiny text-muted">X</span>
             <select
               value={p.xIndex ?? ""}
               onChange={(e) =>
@@ -304,7 +213,7 @@ export function HighlightEditor({
                 })
               }
               disabled={!canEdit}
-              style={sharedSelectStyle}
+              className="pill-select"
             >
               <option value="">(none)</option>
               {xOptions.map((o) => (
@@ -314,7 +223,7 @@ export function HighlightEditor({
               ))}
             </select>
 
-            <span style={{ fontSize: "0.75rem", color: "#4b5563" }}>axis</span>
+            <span className="text-tiny text-muted">axis</span>
             <select
               value={p.axis}
               onChange={(e) =>
@@ -323,10 +232,10 @@ export function HighlightEditor({
                   seriesKey:
                     e.target.value === "right"
                       ? "right"
-                      : leftSeriesLabels[0] ?? p.seriesKey,
+                  : leftSeriesLabels[0] ?? p.seriesKey,
                 })
               }
-              style={sharedSelectStyle}
+              className="pill-select"
             >
               <option value="left">left</option>
               <option value="right">right</option>
@@ -334,15 +243,13 @@ export function HighlightEditor({
 
             {p.axis === "left" && (
               <>
-                <span style={{ fontSize: "0.75rem", color: "#4b5563" }}>
-                  series
-                </span>
+                <span className="text-tiny text-muted">series</span>
                 <select
                   value={p.seriesKey}
                   onChange={(e) =>
                     updatePointAt(idx, { seriesKey: e.target.value })
                   }
-                  style={sharedSelectStyle}
+                  className="pill-select"
                 >
                   {leftSeriesLabels.map((name) => (
                     <option key={name} value={name}>
@@ -361,29 +268,13 @@ export function HighlightEditor({
               onKeyDown={(e) => {
                 e.stopPropagation();
               }}
-              style={{
-                flex: 1,
-                minWidth: "8rem",
-                fontSize: "0.75rem",
-                padding: "0.2rem 0.45rem",
-                backgroundColor: "#ffffff",
-                borderRadius: "0.375rem",
-                border: "1px solid #d1d5db",
-              }}
+              className="pill-input"
             />
 
             <button
               type="button"
               onClick={() => removePointAt(idx)}
-              style={{
-                fontSize: "0.75rem",
-                borderRadius: "999px",
-                padding: "0.1rem 0.45rem",
-                background: "#fee2e2",
-                color: "#991b1b",
-                border: "1px solid #fecaca",
-                cursor: "pointer",
-              }}
+              className="chip-button chip-button--danger"
             >
               ×
             </button>
