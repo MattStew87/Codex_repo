@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 from typing import Dict, List, Optional, Union, Literal
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, field_validator, model_validator, ConfigDict, Field
 
 PosterType = Literal["pie", "bar", "dual"]
+TimeRange = Literal["7d", "30d", "90d", "180d", "1y", "all"]
 
 
 class BasePosterConfig(BaseModel):
@@ -105,6 +106,8 @@ class HighlightPoint(BaseModel):
 # ---------- DUAL / DATETIME ----------
 
 class DualConfig(BasePosterConfig):
+    model_config = ConfigDict(populate_by_name=True)
+
     poster_type: Literal["dual"]
 
     x_values: List[str]  # parseable date strings or numeric strings
@@ -125,6 +128,8 @@ class DualConfig(BasePosterConfig):
 
     highlight_regions: Optional[List[HighlightRegion]] = None
     highlight_points: Optional[List[HighlightPoint]] = None
+
+    time_range: TimeRange = Field("all", alias="timeRange")
 
     @model_validator(mode="after")
     def validate_series_lengths(self) -> "DualConfig":
