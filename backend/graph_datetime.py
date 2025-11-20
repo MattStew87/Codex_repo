@@ -43,12 +43,6 @@ def _time_range_to_timedelta(r: str):
     return None
 
 
-def _normalize_datetime_to_naive_utc(dt: datetime) -> datetime:
-    if dt.tzinfo is None:
-        return dt
-    return dt.astimezone(timezone.utc).replace(tzinfo=None)
-
-
 def apply_time_range(xs, left_series_dict, right_series, time_range: str):
     """
     xs: list[datetime]
