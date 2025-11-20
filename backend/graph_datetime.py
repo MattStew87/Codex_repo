@@ -537,6 +537,26 @@ def render_pine_poster_dual(
     N = L
 
     if x_is_date:
+        left_series_dict = {
+            label: list(series) for label, series in zip(left_labels, Y_left)
+        }
+        right_list = Y_right[0].tolist() if Y_right is not None else None
+
+        X, left_series_dict, right_list = apply_time_range(
+            X, left_series_dict, right_list, time_range
+        )
+
+        left_labels = list(left_series_dict.keys())
+        Y_left = [np.array(vals, dtype=float) for vals in left_series_dict.values()]
+        if right_list is not None and Y_right is not None:
+            Y_right = [np.array(right_list, dtype=float)]
+        else:
+            Y_right = None
+
+    L = len(Y_left[0])
+    N = L
+
+    if x_is_date:
         x_num = mdates.date2num(X)
         x_plot = x_num
     else:
