@@ -8,6 +8,7 @@ import {
   PieConfig,
   BarConfig,
   DualConfig,
+  TimeRange,
   RenderResponse,
   BindingState,       // ✅ use this instead of QueryBinding
   DualDataBinding,
@@ -52,6 +53,18 @@ function isDual(config: PosterConfig): config is DualConfig {
   return config.poster_type === "dual";
 }
 
+const ensureDualTimeRange = (cfg: PosterConfig): PosterConfig => {
+  if (cfg.poster_type === "dual") {
+    const dualCfg = cfg as DualConfig;
+    return {
+      ...dualCfg,
+      timeRange: (dualCfg.timeRange as TimeRange) ?? "all",
+    };
+  }
+
+  return cfg;
+};
+
 export default function Page() {
   const [posterType, setPosterType] = useState<PosterType>("pie");
   const [config, setConfig] = useState<PosterConfig | null>(null);
@@ -86,7 +99,7 @@ export default function Page() {
           throw new Error(text || `HTTP ${res.status}`);
         }
         const cfg = (await res.json()) as PosterConfig;
-        setConfig(cfg);
+        setConfig(ensureDualTimeRange(cfg));
       } catch (e: any) {
         console.error(e);
         setError(e.message ?? "Failed to load defaults");
@@ -203,7 +216,7 @@ export default function Page() {
           throw new Error(text || `HTTP ${res.status}`);
         }
         const cfg = (await res.json()) as PosterConfig;
-        setConfig(cfg);
+        setConfig(ensureDualTimeRange(cfg));
       } catch (e: any) {
         console.error(e);
         setError(e.message ?? "Failed to reload defaults");
@@ -326,7 +339,7 @@ export default function Page() {
                 binding: nextBinding,
               }) => {
                 setPosterType(nextType);
-                setConfig(nextCfg);
+                setConfig(ensureDualTimeRange(nextCfg));
                 setBinding(nextBinding);
               }}
             />
