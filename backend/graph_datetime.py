@@ -43,6 +43,12 @@ def _time_range_to_timedelta(r: str):
     return None
 
 
+def _normalize_datetime_to_naive_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt
+    return dt.astimezone(timezone.utc).replace(tzinfo=None)
+
+
 def apply_time_range(xs, left_series_dict, right_series, time_range: str):
     """
     xs: list[datetime]
@@ -467,25 +473,68 @@ def render_pine_poster_dual(
             parsed_dt.append(_normalize_datetime_to_naive_utc(dt))
         return parsed_dt
 
+    def _looks_like_datetime(vals):
+        for xv in vals:
+            if isinstance(xv, datetime):
+                return True
+            if isinstance(xv, str):
+                if any(tok in xv for tok in ("-", "/", "T", ":")):
+                    return True
+            # Also treat pandas/NumPy datetime64 by string inspection
+            if hasattr(xv, "dtype") and "datetime" in str(getattr(xv, "dtype", "")):
+                return True
+        return False
+
+    def _all_numeric(vals):
+        try:
+            [float(v) for v in vals]
+            return True
+        except Exception:
+            return False
+
     if x_values is None:
         X = list(range(1, L + 1))
     else:
-        try:
-            parsed = _parse_x_values(x_values)
-            X = parsed
-            x_is_date = True
-        except Exception:
+        vals_list = list(x_values)
+        if _looks_like_datetime(vals_list):
             try:
-                if isinstance(xv, datetime):
-                    dt = xv
-                else:
-                    dt = dateparser.parse(str(xv))
-                dt = _normalize_datetime_to_naive_utc(dt)
-                parsed.append(dt); x_is_date = True
-            except Exception:
-                parsed = list(x_values); x_is_date = False
-                break
-        X = parsed
+                X = _parse_x_values(vals_list)
+                x_is_date = True
+            except Exception as exc:
+                raise ValueError(
+                    "x_values must be parseable datetimes for time-series charts"
+                ) from exc
+        elif _all_numeric(vals_list):
+            X = [float(v) for v in vals_list]
+            x_is_date = False
+        else:
+            try:
+                X = _parse_x_values(vals_list)
+                x_is_date = True
+            except Exception as exc:
+                raise ValueError(
+                    "x_values must be parseable datetimes or numeric values"
+                ) from exc
+
+    if x_is_date:
+        left_series_dict = {
+            label: list(series) for label, series in zip(left_labels, Y_left)
+        }
+        right_list = Y_right[0].tolist() if Y_right is not None else None
+
+        X, left_series_dict, right_list = apply_time_range(
+            X, left_series_dict, right_list, time_range
+        )
+
+        left_labels = list(left_series_dict.keys())
+        Y_left = [np.array(vals, dtype=float) for vals in left_series_dict.values()]
+        if right_list is not None and Y_right is not None:
+            Y_right = [np.array(right_list, dtype=float)]
+        else:
+            Y_right = None
+
+    L = len(Y_left[0])
+    N = L
 
     if x_is_date:
         left_series_dict = {
@@ -511,7 +560,12 @@ def render_pine_poster_dual(
         x_num = mdates.date2num(X)
         x_plot = x_num
     else:
-        x_plot = np.array(X, dtype=float)
+        try:
+            x_plot = np.array(X, dtype=float)
+        except Exception as exc:
+            raise ValueError(
+                "x_values must be numeric when not parsed as datetimes"
+            ) from exc
 
     # helper to convert highlight x to same scale
     def _to_x_plot(val):
