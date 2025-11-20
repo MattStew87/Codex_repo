@@ -20,15 +20,15 @@ interface Props {
  * It does NOT talk to the Python backend. Your "Render poster" button
  * still sends the current config elsewhere, same as before.
  */
-export function BarPosterEditor({ 
+export function BarPosterEditor({
   config,
   binding,
   onChange,
   onBindingChange,
 }: Props) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <BarDataBindingSection 
+    <div className="stack-lg">
+      <BarDataBindingSection
         config={config}
         binding={binding}
         onConfigChange={onChange}
