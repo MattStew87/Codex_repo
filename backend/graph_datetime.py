@@ -43,12 +43,6 @@ def _time_range_to_timedelta(r: str):
     return None
 
 
-def _normalize_datetime_to_naive_utc(dt: datetime) -> datetime:
-    if dt.tzinfo is None:
-        return dt
-    return dt.astimezone(timezone.utc).replace(tzinfo=None)
-
-
 def apply_time_range(xs, left_series_dict, right_series, time_range: str):
     """
     xs: list[datetime]
@@ -482,13 +476,16 @@ def render_pine_poster_dual(
             x_is_date = True
         except Exception:
             try:
-                X = [float(v) for v in x_values]
-                x_is_date = False
-            except Exception as exc:
-                raise ValueError(
-                    "x_values must be parseable datetimes for time-series charts "
-                    "or numeric values for categorical charts"
-                ) from exc
+                if isinstance(xv, datetime):
+                    dt = xv
+                else:
+                    dt = dateparser.parse(str(xv))
+                dt = _normalize_datetime_to_naive_utc(dt)
+                parsed.append(dt); x_is_date = True
+            except Exception:
+                parsed = list(x_values); x_is_date = False
+                break
+        X = parsed
 
     if x_is_date:
         left_series_dict = {
