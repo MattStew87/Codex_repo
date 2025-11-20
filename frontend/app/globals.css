@@ -1,0 +1,699 @@
+/* =========================================================
+   1. Global reset & base typography
+   ========================================================= */
+
+   :root {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      sans-serif;
+    color: #0f172a;              /* default text color */
+    background-color: #f3f4f6;   /* page background */
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;      /* predictable sizing */
+  }
+  
+  body {
+    margin: 0;                   /* remove default margin */
+  }
+  
+  /* =========================================================
+     2. Layout shell (root, header, main grid)
+     ========================================================= */
+  
+  .app-root {
+    height: 100vh;               /* lock app to viewport height */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .app-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+  }
+  
+  .app-header h1 {
+    margin: 0 0 0.25rem;
+    font-size: 1.4rem;
+  }
+  
+  .app-header p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+  
+  .app-main {
+    flex: 1 1 0;                 /* fill remaining space below header */
+    min-height: 0;               /* allow children to scroll */
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    overflow: hidden;            /* columns manage their own scroll */
+  }
+  
+  /* =========================================================
+     3. Left column (controls / config panel)
+     ========================================================= */
+  
+  .controls-panel {
+    background: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;               /* enables internal scrolling */
+    max-height: 100%;
+    overflow-y: auto;            /* scroll only within controls column */
+  }
+  
+  /* --- Action buttons at top of controls --- */
+  
+  .buttons-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+/* =========================================================
+   4. Right column (preview + AI chat)
+   ========================================================= */
+
+   .preview-panel {
+    background: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  
+    /* right column can scroll as a whole if needed */
+    min-height: 0;
+    overflow-y: auto;
+  }
+  
+  /* Preview (top) and AI (bottom) containers */
+  .preview-section {
+    display: flex;
+    flex-direction: column;
+  
+    /* content-based height, but don't let it exceed ~60% of viewport */
+    flex: 0 0 auto;
+    max-height: 60vh;
+    min-height: 0;
+    overflow: auto;          /* scroll INSIDE preview if poster is tall */
+  }
+  
+  .preview-ai-section {
+    flex: 1 1 auto;          /* takes the remaining space under the preview */
+    min-height: 0;
+  }
+  
+  /* Wrapper if you need full-height preview content */
+  .preview-section-inner {
+    height: 100%;
+  }
+  
+  /* =========================================================
+     5. Generic form layout (used by base fields & bindings)
+     ========================================================= */
+  
+  .field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.9rem;
+  }
+  
+  /* Label styling */
+  .field-row label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  /* Inputs, selects, textareas inside field rows */
+  .field-row input[type="text"],
+  .field-row input[type="file"],
+  .field-row textarea,
+  .field-row select {
+    width: 100%;
+    padding: 0.5rem 0.65rem;      /* comfortable click target */
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background-color: #f9fafb;
+    outline: none;
+    transition:
+      border-color 0.12s ease-out,
+      box-shadow 0.12s ease-out,
+      background-color 0.12s ease-out;
+  }
+  
+  /* Hover & focus states */
+  .field-row input[type="text"]:hover,
+  .field-row input[type="file"]:hover,
+  .field-row textarea:hover,
+  .field-row select:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .field-row input[type="text"]:focus,
+  .field-row input[type="file"]:focus,
+  .field-row textarea:focus,
+  .field-row select:focus {
+    border-color: #2563eb;        /* blue ring */
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.4);
+    background-color: #ffffff;
+  }
+  
+  /* For simple inline arrangements (e.g., file input row) */
+  .field-row-inline {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  
+  /* Small helper / hint text under fields */
+  .field-help {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #6b7280;
+  }
+  
+  /* Status text for async actions in forms */
+  .field-status {
+    margin-top: 0.2rem;
+    font-size: 0.78rem;
+  }
+  
+  .field-status--muted {
+    color: #6b7280;
+  }
+  
+  .field-status--error {
+    color: #b91c1c;
+  }
+  
+  /* =========================================================
+     6. Config cards (grouping related form sections)
+     ========================================================= */
+  
+  .config-card {
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  
+  .config-card-header {
+    margin-bottom: 0.75rem;
+  }
+  
+  .config-card-title {
+    margin: 0 0 0.15rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  .config-card-subtitle {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #6b7280;
+  }
+  
+  .config-card-body {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* =========================================================
+     7. Buttons & error box
+     ========================================================= */
+  
+  button {
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    border: none;
+    background: #111827;
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background-color 0.12s ease-out,
+      transform 0.08s ease-out;
+  }
+  
+  button:hover:not(:disabled) {
+    background: #0b1120;          /* slightly darker on hover */
+    transform: translateY(-0.5px);
+  }
+  
+  button:active:not(:disabled) {
+    transform: translateY(0);     /* reset on click */
+  }
+  
+  button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  
+  .error-box {
+    padding: 0.5rem 0.7rem;
+    border-radius: 0.5rem;
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  /* =========================================================
+     8. Raw JSON / textarea config editor (if used)
+     ========================================================= */
+  
+  .config-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    flex: 1;
+  }
+  
+  .config-editor label {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  
+  .config-editor textarea {
+    flex: 1;
+    resize: vertical;
+    min-height: 260px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", "Courier New", monospace;
+    font-size: 0.8rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
+  }
+  
+  /* =========================================================
+     9. Preview styles
+     ========================================================= */
+  
+     .preview-panel h2 {
+      /* we’ll control spacing via the header row */
+      margin: 0;
+      font-size: 1rem;
+    }
+    
+    /* Header row: "Preview" on the left, button on the right */
+    .preview-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    
+    .preview-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    
+    /* Outer box that lives inside .preview-section and fills that half */
+    .preview-box {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 0;              /* remove inner padding */
+      border: none;            /* remove border */
+      background: transparent; /* remove background */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Image should use the width and grow as much as the container allows */
+    .preview-image {
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;     /* no stretching, just scale to fit */
+      border-radius: 0.4rem;
+      display: block;
+    }
+    
+    /* Placeholder still gets a subtle frame */
+    .preview-placeholder {
+      width: 100%;
+      height: 100%;
+      border-radius: 0.4rem;
+      border: 1px dashed #d1d5db;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+    
+    /* Download button inline with header, right side */
+    .preview-download-link {
+      text-decoration: none;
+    }
+    
+    .preview-download-link button {
+      padding: 0.3rem 0.8rem;
+      font-size: 0.8rem;
+    }
+  
+  /* Divider between preview and AI chat in the right column */
+  .preview-ai-divider {
+    margin: 0.85rem 0;
+    border: 0;
+    border-top: 1px dashed #e5e7eb;
+  }
+  
+  /* =========================================================
+     10. AI config chat panel
+     ========================================================= */
+  
+  .ai-chat-panel {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    background: #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    height: 100%;                 /* fill its half of the column */
+  }
+  
+  .ai-chat-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .ai-chat-helper-text {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+  }
+  
+  .ai-chat-messages {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    flex: 1 1 0;                  /* take remaining space inside the chat panel */
+    min-height: 0;
+    overflow-y: auto;
+    background: #ffffff;
+    font-size: 0.8rem;
+  }
+  
+  .ai-chat-empty {
+    color: #9ca3af;
+    margin: 0;
+  }
+  
+  .ai-chat-message {
+    margin-bottom: 0.35rem;
+    display: flex;
+  }
+  
+  .ai-chat-message--user {
+    justify-content: flex-end;
+  }
+  
+  .ai-chat-message--assistant {
+    justify-content: flex-start;
+  }
+  
+  .ai-chat-bubble {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    max-width: 100%;
+    word-break: break-word;
+  }
+  
+  .ai-chat-bubble--user {
+    background: #2563eb;
+    color: #ffffff;
+  }
+  
+  .ai-chat-bubble--assistant {
+    background: rgba(15, 23, 42, 0.04);
+    color: #111827;
+  }
+  
+  .ai-chat-input {
+    width: 100%;
+    resize: vertical;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+  }
+  
+  .ai-chat-error {
+    font-size: 0.75rem;
+    color: #b91c1c;
+    margin: 0;
+  }
+  
+  .ai-chat-footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+/* 
+/* =========================================================
+  11. Center Image Upload Box
+  ========================================================= */
+*
+
+
+  .center-image-box {
+    border: 1px dashed #d1d5db;            /* dashed border when empty */
+    border-radius: 0.75rem;
+    background: #f9fafb;
+    padding: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    gap: 0.4rem;
+    text-align: center;
+    transition:
+      border-color 0.12s ease-out,
+      background-color 0.12s ease-out,
+      box-shadow 0.12s ease-out;
+  }
+  
+  .center-image-box:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+  }
+  
+  .center-image-box--has-image {
+    border-style: solid;                   /* solid border when image present */
+    border-color: #a5b4fc;
+    background: #eef2ff;
+  }
+  
+  .center-image-text {
+    font-size: 0.85rem;
+    color: #374151;
+  }
+  
+  .center-image-text--sub {
+    font-size: 0.78rem;
+    color: #6b7280;
+  }
+  
+  .center-image-preview-wrapper {
+    width: 140px;
+    height: 140px;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .center-image-preview {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  
+  /* hide the real file input */
+  .center-image-input-hidden {
+    display: none;
+  }
+
+
+/* =========================================================
+ * 12. Poster type selector - primary section control
+ * =======================================================*/
+
+ .poster-type-row {
+  /* visual container for the top-of-section control */
+  margin-bottom: 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.9rem;
+  border: 1px solid #e5e7eb;
+  background: radial-gradient(circle at top left, #eef2ff 0, #f9fafb 45%, #ffffff 100%);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.poster-type-header {
+  /* label row: title + small tag */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.poster-type-label {
+  /* main label text */
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #0f172a;
+}
+
+.poster-type-tag {
+  /* small pill tag on the right ("Start here") */
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  white-space: nowrap;
+}
+
+.poster-type-select {
+  /* bigger, rounded select that matches the rest of the app */
+  width: 100%;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #cbd5f5;
+  background: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #111827;
+  outline: none;
+  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.04);
+  transition:
+    border-color 120ms ease-out,
+    box-shadow 120ms ease-out,
+    background-color 120ms ease-out;
+}
+
+/* focus/hover states for the select */
+.poster-type-select:hover {
+  background-color: #f9fafb;
+}
+
+.poster-type-select:focus {
+  border-color: #111827;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.12);
+}
+
+
+/* =========================================================
+   13. Bar chart label image mapping
+   ========================================================= */
+
+   .label-images-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  
+  .label-image-pill {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.3rem 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #f9fafb;
+    cursor: pointer;
+    transition:
+      border-color 0.12s ease-out,
+      box-shadow 0.12s ease-out,
+      background-color 0.12s ease-out;
+  }
+  
+  .label-image-pill:hover {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+    background: #eff6ff;
+  }
+  
+  .label-image-pill-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+  }
+  
+  .label-image-pill-status {
+    font-size: 0.75rem;
+    color: #9ca3af;
+  }
+  
+  .label-image-pill-status--has-image {
+    color: #6b7280;
+  }
+  
+  .label-image-thumb-wrapper {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  
+  .label-image-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .label-image-pill-input-hidden {
+    display: none;
+  }
+  
+  /* Use base button styles but tweak the remove pill */
+  .label-image-remove-btn {
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 0.75rem;
+    padding: 0 0.4rem;
+  }
+  
