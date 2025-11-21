@@ -508,21 +508,6 @@ export function DualDataBindingSection({
         </select>
       </div>
 
-      <div className="field-row">
-        <label>X column</label>
-        <select
-          value={activeAxis.x_column ?? ""}
-          onChange={(e) => updateActiveAxis({ x_column: e.target.value })}
-          disabled={!activeTable}
-        >
-          <option value="">Select x column</option>
-          {columns.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </div>
 
       <div className="field-row">
         <label>Missing data handling</label>
@@ -542,6 +527,24 @@ export function DualDataBindingSection({
           absent.
         </p>
       </div>
+
+      <div className="field-row">
+        <label>X column</label>
+        <select
+          value={activeAxis.x_column ?? ""}
+          onChange={(e) => updateActiveAxis({ x_column: e.target.value })}
+          disabled={!activeTable}
+        >
+          <option value="">Select x column</option>
+          {columns.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      
 
       {/* Grouped toggle + group column (left axis only) */}
       {side === "left" && (
