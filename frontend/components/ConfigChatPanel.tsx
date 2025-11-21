@@ -96,28 +96,40 @@ export function ConfigChatPanel({
 
   return (
     <div className="ai-chat-panel">
-      <h3 className="ai-chat-title">AI config assistant</h3>
-
-      {!hasCatalog && (
-        <p className="ai-chat-helper-text">
-          Loading catalog snapshot… the assistant will be enabled once ready.
-        </p>
-      )}
+      <div className="ai-chat-header">
+        <div>
+          <h3 className="ai-chat-title">AI config assistant</h3>
+          <p className="ai-chat-helper-text">
+            Describe the chart you need and the assistant will rewrite the
+            poster config and bindings to match your dataset.
+          </p>
+        </div>
+        <span
+          className={`ai-chat-status ${hasCatalog ? "ai-chat-status--ready" : "ai-chat-status--loading"}`}
+        >
+          {hasCatalog ? "Catalog ready" : "Loading catalog"}
+        </span>
+      </div>
 
       <div className="ai-chat-messages">
         {messages.length === 0 ? (
-          <p className="ai-chat-empty">
-            Ask things like:
-            <br />
-            <code>
-              Make this a dual chart of total volume by chain over time using
-              plasma.fact_swaps
-            </code>
-            <br />
-            or
-            <br />
-            <code>Turn this into a pie of volume share by token</code>
-          </p>
+          <div className="ai-chat-empty">
+            <p className="ai-chat-empty-title">Jumpstart a request</p>
+            <ul className="ai-chat-empty-list">
+              <li>
+                Turn this into a dual chart of swap volume vs. TVL grouped by
+                chain from <code>plasma.fact_swaps</code>
+              </li>
+              <li>
+                Switch to a bar chart of daily swap count by token symbol with
+                a 30 day window
+              </li>
+              <li>
+                Make a pie showing volume share by pool and highlight the top 5
+                pools
+              </li>
+            </ul>
+          </div>
         ) : (
           messages.map((m, idx) => (
             <div
@@ -149,7 +161,7 @@ export function ConfigChatPanel({
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="Describe what you want the chart to show…"
-        rows={2}
+        rows={3}
       />
 
       {error && <p className="ai-chat-error">{error}</p>}
