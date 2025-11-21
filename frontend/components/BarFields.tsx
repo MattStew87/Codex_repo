@@ -1,6 +1,7 @@
 // app/components/BarFields.tsx
 "use client";
 
+import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import type { BarConfig, Orientation } from "@/lib/types";
 
@@ -294,10 +295,13 @@ export function BarFields({ config, onChange }: Props) {
 
                     {hasImage && previewUrl && (
                       <div className="label-image-thumb-wrapper">
-                        <img
+                        <Image
                           src={previewUrl}
                           alt={label}
                           className="label-image-thumb"
+                          width={64}
+                          height={64}
+                          unoptimized
                         />
                       </div>
                     )}

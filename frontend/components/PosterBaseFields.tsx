@@ -1,7 +1,8 @@
 // app/components/PosterBaseFields.tsx
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import type { PosterConfig } from "@/lib/types";
 
 interface Props {
@@ -18,7 +19,7 @@ export function PosterBaseFields({ config, onChange }: Props) {
   const update = (patch: Partial<PosterConfig>) =>
     onChange({ ...config, ...patch } as PosterConfig);
 
-  const templateName = (config as any).template_name ?? "main";
+  const templateName = config.template_name ?? "main";
 
   // If the parent resets/switches poster type and clears center_image,
   // also clear the preview URL.
@@ -135,11 +136,11 @@ export function PosterBaseFields({ config, onChange }: Props) {
           <select
             id="poster-template"
             value={templateName}
-            onChange={(e) =>
-              update({
-                template_name: e.target.value,
-              } as any)
-            }
+              onChange={(e) =>
+                update({
+                  template_name: e.target.value,
+                })
+              }
           >
             <option value="main">Main</option>
           </select>
@@ -180,10 +181,13 @@ export function PosterBaseFields({ config, onChange }: Props) {
             <div className="center-image-pill-thumb">
               {centerImagePreviewUrl ? (
                 <>
-                  <img
+                  <Image
                     src={centerImagePreviewUrl}
                     alt="Center"
                     className="center-image-pill-img"
+                    width={96}
+                    height={96}
+                    unoptimized
                   />
                   <button
                     type="button"
