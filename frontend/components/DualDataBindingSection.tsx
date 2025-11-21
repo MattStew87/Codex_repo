@@ -431,6 +431,32 @@ export function DualDataBindingSection({
     (side === "left" || seriesCount === 1) && // right side: exactly one series
     (!requiresGroupColumn || !!activeAxis.group_column);
 
+  const renderCheckboxPill = (
+    id: string,
+    label: string,
+    checked: boolean,
+    onChange: (value: boolean) => void,
+  ) => (
+    <div className="checkbox-pill-wrapper">
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="checkbox-pill-input"
+      />
+      <label
+        htmlFor={id}
+        className={`checkbox-pill ${
+          checked ? "checkbox-pill--on" : "checkbox-pill--off"
+        }`}
+      >
+        <span className="checkbox-pill-text">{label}</span>
+        <span className="checkbox-pill-status">{checked ? "on" : "off"}</span>
+      </label>
+    </div>
+  );
+
   return (
     <div className="data-binding-card">
       <h3 className="data-binding-title">Data binding</h3>
@@ -520,21 +546,16 @@ export function DualDataBindingSection({
       {/* Grouped toggle + group column (left axis only) */}
       {side === "left" && (
         <div className="field-row">
-          <label>
-            <input
-              type="checkbox"
-              checked={activeAxis.grouped ?? false}
-              onChange={(e) =>
-                updateActiveAxis({
-                  grouped: e.target.checked,
-                  group_column: e.target.checked
-                    ? activeAxis.group_column ?? ""
-                    : "",
-                })
-              }
-            />{" "}
-            Group by column
-          </label>
+          {renderCheckboxPill(
+            "dual-group-toggle",
+            "Group by column",
+            activeAxis.grouped ?? false,
+            (value) =>
+              updateActiveAxis({
+                grouped: value,
+                group_column: value ? activeAxis.group_column ?? "" : "",
+              }),
+          )}
         </div>
       )}
 

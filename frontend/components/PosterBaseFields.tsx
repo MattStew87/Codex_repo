@@ -135,61 +135,64 @@ export function PosterBaseFields({ config, onChange }: Props) {
         </div>
 
         <div className="field-row">
-        <label>Center image</label>
+          <label>Center image</label>
 
-        <div
-          className={
-            "center-image-box" +
-            (config.center_image ? " center-image-box--has-image" : "")
-          }
-          onClick={() => fileInputRef.current?.click()}
-        >
-          {uploadingCenter && (
-            <span className="center-image-text">Uploading…</span>
-          )}
-
-          {!uploadingCenter && !config.center_image && (
-            <span className="center-image-text">
-              Click to upload an image
-            </span>
-          )}
-
-          {!uploadingCenter && config.center_image && (
-            <>
-              <div className="center-image-preview-wrapper">
+          <button
+            type="button"
+            className={
+              "center-image-pill" +
+              (config.center_image ? " center-image-pill--has-image" : "") +
+              (uploadingCenter ? " center-image-pill--uploading" : "")
+            }
+            onClick={() => !uploadingCenter && fileInputRef.current?.click()}
+            disabled={uploadingCenter}
+          >
+            <div className="center-image-pill-thumb">
+              {config.center_image ? (
                 <img
                   src={config.center_image}
                   alt="Center"
-                  className="center-image-preview"
+                  className="center-image-pill-img"
                 />
-              </div>
-              <span className="center-image-text center-image-text--sub">
-                Image attached — click to replace
+              ) : (
+                <span className="center-image-pill-placeholder">No image</span>
+              )}
+            </div>
+
+            <div className="center-image-pill-copy">
+              <span className="center-image-pill-title">
+                {config.center_image ? "Center image attached" : "Add center image"}
               </span>
-            </>
+              <span className="center-image-pill-sub">
+                {uploadingCenter
+                  ? "Uploading…"
+                  : config.center_image
+                    ? "Click to replace the focal image"
+                    : "Click to upload a focal image"}
+              </span>
+            </div>
+          </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="center-image-input-hidden"
+            onChange={(e) => handleCenterImageUpload(e.target.files)}
+            disabled={uploadingCenter}
+          />
+
+          {uploadError && (
+            <span className="field-status field-status--error">
+              {uploadError}
+            </span>
           )}
+
+          <p className="field-help">
+            Optional focal image (e.g., logo or protocol icon) rendered in the
+            chart area.
+          </p>
         </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="center-image-input-hidden"
-          onChange={(e) => handleCenterImageUpload(e.target.files)}
-          disabled={uploadingCenter}
-        />
-
-        {uploadError && (
-          <span className="field-status field-status--error">
-            {uploadError}
-          </span>
-        )}
-
-        <p className="field-help">
-          Optional focal image (e.g., logo or protocol icon) rendered in the
-          chart area.
-        </p>
-      </div>
       </div>
     </section>
   );
