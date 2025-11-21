@@ -27,22 +27,13 @@ function applyTheme(theme: ThemeMode) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<ThemeMode>("light");
-
-  useEffect(() => {
-    const initial = getInitialTheme();
-    if (initial !== theme) {
-      // Persisted preference may differ from the SSR default; update after mount.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setTheme(initial);
-    }
-    applyTheme(initial);
-  }, [theme]);
+  const [theme, setTheme] = useState<ThemeMode>(() => getInitialTheme());
 
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
 
+  
   const handleToggle = () => {
     const nextTheme: ThemeMode = theme === "light" ? "dark" : "light";
     setTheme(nextTheme);
