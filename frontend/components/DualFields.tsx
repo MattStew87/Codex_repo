@@ -131,12 +131,26 @@ export function DualFields({ config, onChange }: Props) {
   const updateConfig = (patch: Partial<DualConfig>) =>
     onChange({ ...config, ...patch });
 
-  const xValues = config.x_values ?? [];
+  const xValues = useMemo(() => config.x_values ?? [], [config.x_values]);
   const timeRange: TimeRange = (config.timeRange as TimeRange) ?? "all";
   const timeBucket: TimeBucket = (config.timeBucket as TimeBucket) ?? "none";
   const leftSeriesLabels = useMemo(
     () => Object.keys(config.y_series ?? {}),
     [config.y_series],
+  );
+
+  const highlightRegionsKey = useMemo(
+    () => JSON.stringify(config.highlight_regions ?? []),
+    [config.highlight_regions],
+  );
+  const highlightPointsKey = useMemo(
+    () => JSON.stringify(config.highlight_points ?? []),
+    [config.highlight_points],
+  );
+  const xValuesKey = useMemo(() => JSON.stringify(xValues), [xValues]);
+  const leftSeriesLabelsKey = useMemo(
+    () => JSON.stringify(leftSeriesLabels),
+    [leftSeriesLabels],
   );
 
   const [uiRegions, setUiRegions] = useState<UiRegion[]>(() =>
@@ -147,18 +161,24 @@ export function DualFields({ config, onChange }: Props) {
   );
 
   // React to config changes from data binding or AI (x_values, highlights, series labels)
+  /* eslint-disable react-hooks/set-state-in-effect */
+  // Synchronize UI highlight controls when external config changes.
   useEffect(() => {
     setUiRegions(toUiRegions(xValues, config.highlight_regions));
     setUiPoints(
       toUiPoints(xValues, leftSeriesLabels, config.highlight_points),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    JSON.stringify(xValues),
-    JSON.stringify(config.highlight_regions ?? []),
-    JSON.stringify(config.highlight_points ?? []),
-    JSON.stringify(leftSeriesLabels),
+    xValuesKey,
+    highlightRegionsKey,
+    highlightPointsKey,
+    leftSeriesLabelsKey,
+    config.highlight_regions,
+    config.highlight_points,
+    leftSeriesLabels,
+    xValues,
   ]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleHighlightsChange = (
     nextRegions: UiRegion[],

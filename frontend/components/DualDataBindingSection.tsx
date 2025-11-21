@@ -301,7 +301,7 @@ export function DualDataBindingSection({
         newIdx[x] = i;
       });
 
-      let nextY: Record<string, number[]> = {};
+      const nextY: Record<string, number[]> = {};
       let nextRight: number[] | undefined;
 
       if (side === "left") {

@@ -77,8 +77,8 @@ export default function Page() {
   const [catalogSnapshot, setCatalogSnapshot] = useState<
     CatalogSchemaSnapshot[] | null
   >(null);
-  const [catalogLoading, setCatalogLoading] = useState(false);
-  const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [, setCatalogLoading] = useState(false);
+  const [, setCatalogError] = useState<string | null>(null);
 
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [loadingDefaults, setLoadingDefaults] = useState(false);

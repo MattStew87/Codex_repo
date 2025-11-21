@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { PosterType } from "@/lib/types";
 
 interface Props {
@@ -43,10 +44,14 @@ export function PosterPreview({ imageBase64, rendering, posterType }: Props) {
         )}
 
         {hasImage && dataUrl && (
-          <img
+          <Image
             src={dataUrl}
             alt="Poster preview"
             className="preview-image"
+            width={1200}
+            height={675}
+            sizes="(max-width: 768px) 100vw, 1200px"
+            unoptimized
           />
         )}
       </div>
