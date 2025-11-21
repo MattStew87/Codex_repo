@@ -1,7 +1,7 @@
 // app/components/PosterBaseFields.tsx
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { PosterConfig } from "@/lib/types";
 
 interface Props {
@@ -12,12 +12,22 @@ interface Props {
 export function PosterBaseFields({ config, onChange }: Props) {
   const [uploadingCenter, setUploadingCenter] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [centerImagePreviewUrl, setCenterImagePreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const update = (patch: Partial<PosterConfig>) =>
     onChange({ ...config, ...patch } as PosterConfig);
 
   const templateName = (config as any).template_name ?? "main";
+
+  // If the parent resets/switches poster type and clears center_image,
+  // also clear the preview URL.
+  useEffect(() => {
+    if (!config.center_image && centerImagePreviewUrl) {
+      URL.revokeObjectURL(centerImagePreviewUrl);
+      setCenterImagePreviewUrl(null);
+    }
+  }, [config.center_image, centerImagePreviewUrl]);
 
   const handleCenterImageUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -41,13 +51,33 @@ export function PosterBaseFields({ config, onChange }: Props) {
       }
 
       const data = (await res.json()) as { path: string };
+
+      // Backend path goes into config.center_image
       update({ center_image: data.path } as PosterConfig);
+
+      // Local blob URL is used only for the thumbnail preview
+      const objectUrl = URL.createObjectURL(file);
+      setCenterImagePreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return objectUrl;
+      });
     } catch (e: any) {
       console.error(e);
       setUploadError(e.message ?? "Failed to upload center image");
     } finally {
       setUploadingCenter(false);
     }
+  };
+
+  const handleClearCenterImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Clear backend path…
+    update({ center_image: undefined } as PosterConfig);
+    // …and clear preview URL
+    setCenterImagePreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
   };
 
   return (
@@ -141,19 +171,28 @@ export function PosterBaseFields({ config, onChange }: Props) {
             type="button"
             className={
               "center-image-pill" +
-              (config.center_image ? " center-image-pill--has-image" : "") +
+              (centerImagePreviewUrl ? " center-image-pill--has-image" : "") +
               (uploadingCenter ? " center-image-pill--uploading" : "")
             }
             onClick={() => !uploadingCenter && fileInputRef.current?.click()}
             disabled={uploadingCenter}
           >
             <div className="center-image-pill-thumb">
-              {config.center_image ? (
-                <img
-                  src={config.center_image}
-                  alt="Center"
-                  className="center-image-pill-img"
-                />
+              {centerImagePreviewUrl ? (
+                <>
+                  <img
+                    src={centerImagePreviewUrl}
+                    alt="Center"
+                    className="center-image-pill-img"
+                  />
+                  <button
+                    type="button"
+                    className="center-image-remove-btn"
+                    onClick={handleClearCenterImage}
+                  >
+                    ×
+                  </button>
+                </>
               ) : (
                 <span className="center-image-pill-placeholder">No image</span>
               )}
@@ -161,12 +200,12 @@ export function PosterBaseFields({ config, onChange }: Props) {
 
             <div className="center-image-pill-copy">
               <span className="center-image-pill-title">
-                {config.center_image ? "Center image attached" : "Add center image"}
+                {centerImagePreviewUrl ? "Center image attached" : "Add center image"}
               </span>
               <span className="center-image-pill-sub">
                 {uploadingCenter
                   ? "Uploading…"
-                  : config.center_image
+                  : centerImagePreviewUrl
                     ? "Click to replace the focal image"
                     : "Click to upload a focal image"}
               </span>
