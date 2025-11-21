@@ -190,6 +190,32 @@ export function DualFields({ config, onChange }: Props) {
       .map((s) => Number(s))
       .filter((n) => !Number.isNaN(n));
 
+  const renderCheckboxPill = (
+    id: string,
+    label: string,
+    checked: boolean,
+    onChange: (value: boolean) => void,
+  ) => (
+    <div className="checkbox-pill-wrapper">
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="checkbox-pill-input"
+      />
+      <label
+        htmlFor={id}
+        className={`checkbox-pill ${
+          checked ? "checkbox-pill--on" : "checkbox-pill--off"
+        }`}
+      >
+        <span className="checkbox-pill-text">{label}</span>
+        <span className="checkbox-pill-status">{checked ? "on" : "off"}</span>
+      </label>
+    </div>
+  );
+
   const ySeriesText = useMemo(() => {
     const entries = Object.entries(config.y_series ?? {});
     if (!entries.length) return "";
@@ -341,30 +367,22 @@ export function DualFields({ config, onChange }: Props) {
 
         {/* 5. Log scale (left) */}
         <div className="field-row">
-          <label htmlFor="dual-log-left">
-            <input
-              id="dual-log-left"
-              type="checkbox"
-              checked={!!config.log_left}
-              onChange={(e) => updateConfig({ log_left: e.target.checked })}
-            />{" "}
-            Log scale (left)
-          </label>
+          {renderCheckboxPill(
+            "dual-log-left",
+            "Log scale (left)",
+            !!config.log_left,
+            (value) => updateConfig({ log_left: value }),
+          )}
         </div>
 
         {/* 6. Force zero in range (left) */}
         <div className="field-row">
-          <label htmlFor="dual-zero-left">
-            <input
-              id="dual-zero-left"
-              type="checkbox"
-              checked={!!config.include_zero_left}
-              onChange={(e) =>
-                updateConfig({ include_zero_left: e.target.checked })
-              }
-            />{" "}
-            Force zero in range (left)
-          </label>
+          {renderCheckboxPill(
+            "dual-zero-left",
+            "Force zero in range (left)",
+            !!config.include_zero_left,
+            (value) => updateConfig({ include_zero_left: value }),
+          )}
         </div>
 
         {/* 7. Right series (optional) */}
@@ -433,30 +451,22 @@ export function DualFields({ config, onChange }: Props) {
 
         {/* 11. Log scale (right) */}
         <div className="field-row">
-          <label htmlFor="dual-log-right">
-            <input
-              id="dual-log-right"
-              type="checkbox"
-              checked={!!config.log_right}
-              onChange={(e) => updateConfig({ log_right: e.target.checked })}
-            />{" "}
-            Log scale (right)
-          </label>
+          {renderCheckboxPill(
+            "dual-log-right",
+            "Log scale (right)",
+            !!config.log_right,
+            (value) => updateConfig({ log_right: value }),
+          )}
         </div>
 
         {/* 12. Force zero in range (right) */}
         <div className="field-row">
-          <label htmlFor="dual-zero-right">
-            <input
-              id="dual-zero-right"
-              type="checkbox"
-              checked={!!config.include_zero_right}
-              onChange={(e) =>
-                updateConfig({ include_zero_right: e.target.checked })
-              }
-            />{" "}
-            Force zero in range (right)
-          </label>
+          {renderCheckboxPill(
+            "dual-zero-right",
+            "Force zero in range (right)",
+            !!config.include_zero_right,
+            (value) => updateConfig({ include_zero_right: value }),
+          )}
         </div>
 
         {/* Highlight editor at the bottom of the section */}

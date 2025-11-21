@@ -936,65 +936,160 @@ button:disabled {
 }
 
 /* =========================================================
-   12. Center image upload box
+   12. Center image chip
    --------------------------------------------------------- */
-.center-image-box {
-  border: 1px dashed var(--color-border);
+.center-image-pill {
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+  padding: 0.6rem 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
   background: var(--color-surface-muted);
-  padding: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.12s ease-out, box-shadow 0.12s ease-out,
+    background-color 0.12s ease-out;
+  width: 100%;
+  max-width: 520px;
+}
+
+.center-image-pill:not(:disabled):hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 12%, transparent);
+  background: color-mix(in srgb, var(--color-accent-soft) 60%, var(--color-surface));
+}
+
+.center-image-pill--has-image {
+  border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
+  background: color-mix(in srgb, var(--color-accent-soft) 50%, var(--color-surface));
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+
+.center-image-pill--uploading {
+  cursor: progress;
+  opacity: 0.85;
+}
+
+.center-image-pill-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  gap: 0.4rem;
-  text-align: center;
-  transition: border-color 0.12s ease-out, background-color 0.12s ease-out,
-    box-shadow 0.12s ease-out;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 16%, transparent);
 }
 
-.center-image-box:hover {
-  border-color: var(--color-accent);
-  background: var(--color-accent-soft);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 15%, transparent);
+.center-image-pill-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.center-image-box--has-image {
-  border-style: solid;
-  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
-  background: var(--color-surface-subtle);
-}
-
-.center-image-text {
-  font-size: 0.85rem;
-  color: var(--color-text);
-}
-
-.center-image-text--sub {
+.center-image-pill-placeholder {
   font-size: 0.78rem;
   color: var(--color-text-muted);
 }
 
-.center-image-preview-wrapper {
-  width: 140px;
-  height: 140px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: var(--color-border);
+.center-image-pill-copy {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 0.15rem;
+  align-items: flex-start;
 }
 
-.center-image-preview {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+.center-image-pill-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.center-image-pill-sub {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
 }
 
 .center-image-input-hidden {
   display: none;
+}
+
+/* =========================================================
+   12b. Checkbox pill toggles
+   --------------------------------------------------------- */
+.checkbox-pill-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.checkbox-pill-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.checkbox-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.85rem 0.4rem 0.9rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-heading);
+  transition: border-color 0.12s ease-out, box-shadow 0.12s ease-out,
+    background-color 0.12s ease-out;
+  user-select: none;
+}
+
+.checkbox-pill:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
+.checkbox-pill--on {
+  background: color-mix(in srgb, #16a34a 18%, var(--color-surface));
+  border-color: color-mix(in srgb, #16a34a 40%, var(--color-border));
+}
+
+.checkbox-pill--off {
+  background: color-mix(in srgb, var(--color-danger-bg) 70%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-danger) 45%, var(--color-border));
+}
+
+.checkbox-pill-text {
+  font-size: 0.9rem;
+}
+
+.checkbox-pill-status {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-border) 70%, transparent);
+  color: var(--color-text);
+}
+
+.checkbox-pill--on .checkbox-pill-status {
+  background: color-mix(in srgb, #16a34a 22%, var(--color-surface));
+  color: var(--color-heading);
+}
+
+.checkbox-pill--off .checkbox-pill-status {
+  background: color-mix(in srgb, var(--color-border) 80%, transparent);
+}
+
+.checkbox-pill-wrapper input:focus-visible + .checkbox-pill {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 /* =========================================================
