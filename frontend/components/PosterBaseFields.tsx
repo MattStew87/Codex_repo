@@ -2,7 +2,13 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+} from "react";
 import type { PosterConfig } from "@/lib/types";
 
 interface Props {
@@ -70,7 +76,7 @@ export function PosterBaseFields({ config, onChange }: Props) {
     }
   };
 
-  const handleClearCenterImage = (e: React.MouseEvent) => {
+  const handleClearCenterImage = (e: MouseEvent) => {
     e.stopPropagation();
     // Clear backend path…
     update({ center_image: undefined } as PosterConfig);
@@ -79,6 +85,18 @@ export function PosterBaseFields({ config, onChange }: Props) {
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
+  };
+
+  const handleTriggerCenterUpload = () => {
+    if (uploadingCenter) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleCenterImageKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleTriggerCenterUpload();
+    }
   };
 
   return (
@@ -168,15 +186,17 @@ export function PosterBaseFields({ config, onChange }: Props) {
         <div className="field-row">
           <label>Center image</label>
 
-          <button
-            type="button"
+          <div
+            role="button"
+            tabIndex={0}
+            aria-disabled={uploadingCenter}
             className={
               "center-image-pill" +
               (centerImagePreviewUrl ? " center-image-pill--has-image" : "") +
               (uploadingCenter ? " center-image-pill--uploading" : "")
             }
-            onClick={() => !uploadingCenter && fileInputRef.current?.click()}
-            disabled={uploadingCenter}
+            onClick={handleTriggerCenterUpload}
+            onKeyDown={handleCenterImageKeyDown}
           >
             <div className="center-image-pill-thumb">
               {centerImagePreviewUrl ? (
@@ -214,7 +234,7 @@ export function PosterBaseFields({ config, onChange }: Props) {
                     : "Click to upload a focal image"}
               </span>
             </div>
-          </button>
+          </div>
 
           <input
             ref={fileInputRef}
